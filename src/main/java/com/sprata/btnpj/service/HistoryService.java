@@ -9,9 +9,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,7 +26,7 @@ public class HistoryService {
 
     public void extractHistoryToFile() throws SQLException, IOException {
         copyDatabase(new File(ORIGINAL_DB_FILE_PATH), new File(COPIED_DB_FILE_PATH));
-        // 잠시 대기 시간 추가
+
         try {
             Thread.sleep(500); // 500ms 대기
         } catch (InterruptedException e) {
@@ -49,13 +48,21 @@ public class HistoryService {
             System.out.println("Connection to SQLite has been established.");
 
             // SQL 쿼리 실행
-            // 기존의 sql 쿼리는 url만 가져오도록 짜여져 있음 (수정하기)
-            ResultSet rs = stmt.executeQuery("SELECT url FROM urls");
+            ResultSet rs = stmt.executeQuery("SELECT urls.url, visits.visit_time "
+                    + "FROM urls INNER JOIN visits ON urls.id = visits.url "
+                    + "ORDER BY visits.visit_time DESC");
 
             // 파일에 쓰기
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_PATH))) {
                 while (rs.next()) {
-                    writer.write(rs.getString("url"));
+                    String url = rs.getString("url");
+                    long visitTimeMicroseconds = rs.getLong("visit_time");
+
+                    // Visit time을 사람이 읽기 쉬운 형식으로 변환 (예: UNIX timestamp를 Date로 변환)
+                    Date visitDate = new Date((visitTimeMicroseconds / 1000L) + (11644473600L * 1000L)); // Windows FILETIME to Unix epoch
+
+                    // 방문 시간과 URL을 파일에 기록
+                    writer.write(visitDate.toString() + " - " + url);
                     writer.newLine();
                 }
             }
