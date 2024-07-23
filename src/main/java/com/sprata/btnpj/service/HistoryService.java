@@ -49,6 +49,7 @@ public class HistoryService {
             System.out.println("Connection to SQLite has been established.");
 
             // SQL 쿼리 실행
+            // 기존의 sql 쿼리는 url만 가져오도록 짜여져 있음 (수정하기)
             ResultSet rs = stmt.executeQuery("SELECT url FROM urls");
 
             // 파일에 쓰기
