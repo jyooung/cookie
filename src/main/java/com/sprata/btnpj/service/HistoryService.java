@@ -2,19 +2,10 @@ package com.sprata.btnpj.service;
 
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.channels.FileChannel;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.text.SimpleDateFormat;
 
 @Service
 public class HistoryService {
@@ -54,17 +45,28 @@ public class HistoryService {
 
             // 파일에 쓰기
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_PATH))) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 while (rs.next()) {
                     String url = rs.getString("url");
                     long visitTimeMicroseconds = rs.getLong("visit_time");
 
-                    // Visit time을 사람이 읽기 쉬운 형식으로 변환 (예: UNIX timestamp를 Date로 변환)
-                    Date visitDate = new Date((visitTimeMicroseconds / 1000L) + (11644473600L * 1000L)); // Windows FILETIME to Unix epoch
+                    // 마이크로초를 밀리초로 변환
+                    long visitTimeMillis = visitTimeMicroseconds / 1000L;
+
+                    // Unix epoch 기준으로 변환
+                    long epochTimeMillis = visitTimeMillis - 11644473600000L;
+
+                    // Date 객체로 변환
+                    java.util.Date visitDate = new java.util.Date(epochTimeMillis);
 
                     // 방문 시간과 URL을 파일에 기록
-                    writer.write(visitDate.toString() + " - " + url);
+                    writer.write(sdf.format(visitDate) + " - " + url);
                     writer.newLine();
                 }
+                System.out.println("Data has been successfully written to the file.");
+            } catch (IOException e) {
+                System.out.println("Error writing to the file: " + e.getMessage());
+                e.printStackTrace();
             }
 
         } catch (ClassNotFoundException e) {
@@ -94,5 +96,6 @@ public class HistoryService {
              FileChannel destination = new FileOutputStream(destFile).getChannel()) {
             destination.transferFrom(source, 0, source.size());
         }
+        System.out.println("Database copied successfully.");
     }
 }
