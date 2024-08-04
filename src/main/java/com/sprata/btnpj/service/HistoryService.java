@@ -14,6 +14,7 @@ public class HistoryService {
     private static final String COPIED_DB_FILE_PATH = "C:/Users/LG/AppData/Local/Google/Chrome/User Data/Default/History_copy";
     private static final String DB_URL = "jdbc:sqlite:" + COPIED_DB_FILE_PATH;
     private static final String OUTPUT_FILE_PATH = "chrome_history.txt";
+    private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history.txt";
 
     public void extractHistoryToFile() throws SQLException, IOException {
         copyDatabase(new File(ORIGINAL_DB_FILE_PATH), new File(COPIED_DB_FILE_PATH));
@@ -44,7 +45,9 @@ public class HistoryService {
                     + "ORDER BY visits.visit_time DESC");
 
             // 파일에 쓰기
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_PATH))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_PATH));
+                 BufferedWriter youtubeWriter = new BufferedWriter(new FileWriter(YOUTUBE_OUTPUT_FILE_PATH))) {
+
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 while (rs.next()) {
                     String url = rs.getString("url");
@@ -60,12 +63,19 @@ public class HistoryService {
                     java.util.Date visitDate = new java.util.Date(epochTimeMillis);
 
                     // 방문 시간과 URL을 파일에 기록
-                    writer.write(sdf.format(visitDate) + " - " + url);
+                    String record = sdf.format(visitDate) + " - " + url;
+                    writer.write(record);
                     writer.newLine();
+
+                    // 유튜브 링크만 필터링하여 다른 파일에 기록
+                    if (url.contains("https://www.youtube.com") || url.contains("youtube.com")) {
+                        youtubeWriter.write(record);
+                        youtubeWriter.newLine();
+                    }
                 }
-                System.out.println("Data has been successfully written to the file.");
+                System.out.println("Data has been successfully written to the files.");
             } catch (IOException e) {
-                System.out.println("Error writing to the file: " + e.getMessage());
+                System.out.println("Error writing to the files: " + e.getMessage());
                 e.printStackTrace();
             }
 
