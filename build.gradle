@@ -25,16 +25,29 @@ repositories {
 }
 
 dependencies {
-    // sqllite넣었음
+    // SQLite JDBC
     implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
 
+    // Spring Boot dependencies
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Lombok dependencies
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // Development dependencies
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // YouTube API and JSON dependencies
+    implementation 'com.google.api-client:google-api-client:1.32.1'
+    implementation 'com.google.http-client:google-http-client-jackson2:1.39.2'
+    implementation 'org.json:json:20230227'
+
 }
 
 tasks.named('test') {
