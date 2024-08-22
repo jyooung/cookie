@@ -26,4 +26,10 @@ public class HistoryController {
             return "Error exporting history: " + e.getMessage();
         }
     }
+
+    @GetMapping("/youtube-details")
+    public String extractYouTubeDetails() throws IOException {
+        historyService.extractYouTubeDetails();
+        return "YouTube details extracted successfully to youtube_details.txt";
+    }
 }
