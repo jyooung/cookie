@@ -27,9 +27,14 @@ public class HistoryController {
         }
     }
 
-    @GetMapping("/youtube-details")
-    public String extractYouTubeDetails() throws IOException {
-        historyService.extractYouTubeDetails();
-        return "YouTube details extracted successfully to youtube_details.txt";
+    @GetMapping("/youtube-urls")
+    public String extractYouTubeUrls() {
+        try {
+            historyService.extractYouTubeUrls();
+            return "YouTube URLs extracted and logged successfully.";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error extracting YouTube URLs: " + e.getMessage();
+        }
     }
 }

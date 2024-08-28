@@ -1,12 +1,8 @@
 package com.sprata.btnpj.service;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -23,11 +19,14 @@ public class HistoryService {
     private static final String DB_URL = "jdbc:sqlite:" + COPIED_DB_FILE_PATH;
     private static final String OUTPUT_FILE_PATH = "chrome_history.txt";
     private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history.txt";
-    private static final String YOUTUBE_DETAILS_OUTPUT_FILE_PATH = "youtube_details.txt";
 
-
-
+    /**
+     * Chrome 브라우저 히스토리를 파일로 추출합니다.
+     * SQLite 데이터베이스에서 히스토리를 읽어와 `chrome_history.txt`와 `chrome_youtube_history.txt` 파일에 기록합니다.
+     * YouTube URL은 별도로 `chrome_youtube_history.txt`에 저장됩니다.
+     */
     public void extractHistoryToFile() throws SQLException, IOException {
+        // 원본 데이터베이스 파일을 복사합니다.
         copyDatabase(new File(ORIGINAL_DB_FILE_PATH), new File(COPIED_DB_FILE_PATH));
 
         try {
@@ -40,7 +39,7 @@ public class HistoryService {
         try (BufferedReader reader = new BufferedReader(new FileReader(OUTPUT_FILE_PATH))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                existingRecords.add(line);
+                existingRecords.add(line); // 이미 기록된 히스토리를 중복되지 않도록 저장
             }
         } catch (FileNotFoundException e) {
             // 파일이 존재하지 않는 경우 무시
@@ -48,6 +47,7 @@ public class HistoryService {
 
         Connection conn = null;
         try {
+            // SQLite 데이터베이스에 연결
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection(DB_URL);
             Statement stmt = conn.createStatement();
@@ -55,6 +55,7 @@ public class HistoryService {
 
             System.out.println("Connection to SQLite has been established.");
 
+            // URL과 방문 시간을 조회하여 최신 방문 순으로 정렬
             ResultSet rs = stmt.executeQuery("SELECT urls.url, visits.visit_time "
                     + "FROM urls INNER JOIN visits ON urls.id = visits.url "
                     + "ORDER BY visits.visit_time DESC");
@@ -67,18 +68,19 @@ public class HistoryService {
                     String url = rs.getString("url");
                     long visitTimeMicroseconds = rs.getLong("visit_time");
                     long visitTimeMillis = visitTimeMicroseconds / 1000L;
-                    long epochTimeMillis = visitTimeMillis - 11644473600000L;
+                    long epochTimeMillis = visitTimeMillis - 11644473600000L; // Windows epoch time 보정
                     java.util.Date visitDate = new java.util.Date(epochTimeMillis);
 
                     String record = sdf.format(visitDate) + " - " + url;
 
                     if (!existingRecords.contains(record)) {
+                        // 새로운 기록을 파일에 추가
                         writer.write(record);
                         writer.newLine();
 
                         if (url.contains("youtube.com")) {
                             youtubeWriter.write(record);
-                            youtubeWriter.newLine();
+                            youtubeWriter.newLine(); // YouTube URL은 별도 파일에 기록
                         }
                     }
                 }
@@ -106,8 +108,14 @@ public class HistoryService {
         }
     }
 
-    public void extractYouTubeDetails() throws IOException {
-        // 파일 존재 여부 및 비어 있는지 확인
+    /**
+     * YouTube URL을 추출하여 콘솔에 출력합니다.
+     * `chrome_youtube_history.txt` 파일에서 각 URL을 추출하여 콘솔에 표시합니다.
+     */
+    public void extractYouTubeUrls() throws IOException {
+        System.out.println("extractYouTubeUrls 메소드가 실행됐습니다.");
+
+        // YouTube 히스토리 파일의 존재 여부와 비어 있는지 확인
         if (!Files.exists(Paths.get(YOUTUBE_OUTPUT_FILE_PATH))) {
             System.out.println("Warning: The YouTube history file does not exist.");
             return; // 파일이 없으면 메서드 종료
@@ -118,8 +126,7 @@ public class HistoryService {
             return; // 파일이 비어 있으면 메서드 종료
         }
 
-        try (BufferedReader youtubeReader = new BufferedReader(new FileReader(YOUTUBE_OUTPUT_FILE_PATH));
-             BufferedWriter detailsWriter = new BufferedWriter(new FileWriter(YOUTUBE_DETAILS_OUTPUT_FILE_PATH, true))) {
+        try (BufferedReader youtubeReader = new BufferedReader(new FileReader(YOUTUBE_OUTPUT_FILE_PATH))) {
 
             String line;
             while ((line = youtubeReader.readLine()) != null) {
@@ -127,39 +134,27 @@ public class HistoryService {
 
                 String url = extractUrlFromLine(line);
                 if (url != null) {
-                    System.out.println("Extracted URL: " + url);  // 디버깅 출력
-
-                    String videoId = getYouTubeVideoId(url);
-                    if (videoId != null) {
-                        System.out.println("Processing video ID: " + videoId);  // 디버깅 출력
-
-                        VideoInfo videoInfo = fetchYouTubeVideoInfo(videoId);
-                        if (videoInfo != null) {
-                            String youtubeRecord = "URL: " + url + " - Title: " + videoInfo.getTitle() + " - Thumbnail: " + videoInfo.getThumbnailUrl();
-                            detailsWriter.write(youtubeRecord);
-                            detailsWriter.newLine();
-                            System.out.println("Recorded YouTube video info: " + youtubeRecord);  // 디버깅 출력
-                        } else {
-                            System.out.println("Video info could not be retrieved for URL: " + url);
-                            detailsWriter.write(line + " - No video info available");
-                            detailsWriter.newLine();
-                        }
-                    } else {
-                        System.out.println("Could not extract video ID from URL: " + url);
-                        detailsWriter.write(line + " - Invalid YouTube URL");
-                        detailsWriter.newLine();
-                    }
+                    System.out.println("Extracted URL: " + url);  // 추출된 URL 콘솔에 출력
+                } else {
+                    System.out.println("No valid URL found in line.");  // URL 추출 실패 시 출력
                 }
             }
 
-            System.out.println("YouTube details have been successfully written to the file.");
+            System.out.println("YouTube URLs have been successfully processed.");
 
         } catch (IOException e) {
-            System.out.println("Error reading YouTube history or writing details: " + e.getMessage());
+            System.out.println("Error reading YouTube history: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    /**
+     * 원본 데이터베이스 파일을 복사합니다.
+     *
+     * @param sourceFile 원본 파일
+     * @param destFile   복사될 파일
+     * @throws IOException 파일 입출력 예외
+     */
     private void copyDatabase(File sourceFile, File destFile) throws IOException {
         if (!destFile.exists()) {
             destFile.createNewFile();
@@ -172,6 +167,12 @@ public class HistoryService {
         System.out.println("Database copied successfully.");
     }
 
+    /**
+     * 텍스트 라인에서 URL을 추출합니다.
+     *
+     * @param line 텍스트 라인
+     * @return 추출된 URL 또는 null
+     */
     private String extractUrlFromLine(String line) {
         int urlStart = line.indexOf("https://");
         if (urlStart != -1) {
@@ -180,99 +181,4 @@ public class HistoryService {
 
         return null;
     }
-
-    private String getYouTubeVideoId(String url) {
-        String videoId = null;
-
-        // Check for short YouTube URL (youtu.be/VIDEO_ID)
-        if (url.contains("youtu.be/")) {
-            videoId = url.split("youtu.be/")[1].split("[?&]")[0];
-        }
-        // Check for standard YouTube URL (youtube.com/watch?v=VIDEO_ID)
-        else if (url.contains("youtube.com/watch")) {
-            String[] queryParams = url.split("[?&]");
-            for (String param : queryParams) {
-                if (param.startsWith("v=")) {
-                    videoId = param.split("=")[1];
-                    break;
-                }
-            }
-        }
-
-        // Log extracted video ID or error message
-        if (videoId != null) {
-            System.out.println("Extracted Video ID: " + videoId);
-        } else {
-            System.out.println("No valid Video ID found in URL: " + url);
-        }
-
-        return videoId;
-    }
-
-
-
-    private VideoInfo fetchYouTubeVideoInfo(String videoId) {
-        HttpURLConnection conn = null;
-        try {
-            String urlString = "https://www.youtube.com/oembed?url=" +
-                    java.net.URLEncoder.encode("https://www.youtube.com/watch?v=" + videoId, "UTF-8") +
-                    "&format=json";
-            System.out.println("Fetching video info from: " + urlString);
-
-            URL url = new URL(urlString);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.connect();
-
-            int responseCode = conn.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
-
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                System.out.println("HttpResponseCode: " + responseCode);
-                return null;
-            }
-
-            StringBuilder inline = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    inline.append(line);
-                }
-            }
-
-            JSONObject json = new JSONObject(inline.toString());
-            String title = json.getString("title");
-            String thumbnailUrl = json.getString("thumbnail_url");
-
-            return new VideoInfo(title, thumbnailUrl);
-
-        } catch (IOException | JSONException e) {
-            System.out.println("Error fetching video info: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-        }
-    }
-
-    class VideoInfo {
-        private String title;
-        private String thumbnailUrl;
-
-        public VideoInfo(String title, String thumbnailUrl) {
-            this.title = title;
-            this.thumbnailUrl = thumbnailUrl;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getThumbnailUrl() {
-            return thumbnailUrl;
-        }
-    }
 }
-
