@@ -9,9 +9,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.sql.Date;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,9 +28,8 @@ public class HistoryService {
     private static final String OUTPUT_FILE_PATH = "chrome_history.txt";
     private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history.txt";
     private static final String YOUTUBE_DETAILS_FILE_PATH = "youtube_details.txt";
-    // 새롭게 추가된 필드
-    private Set<String> processedHashes = new HashSet<>();
 
+    private Set<String> processedHashes = new HashSet<>();
 
     public void extractHistoryToFile() throws SQLException, IOException {
         copyDatabase(new File(ORIGINAL_DB_FILE_PATH), new File(COPIED_DB_FILE_PATH));
@@ -40,15 +40,8 @@ public class HistoryService {
             Thread.currentThread().interrupt();
         }
 
-        Set<String> existingRecords = new HashSet<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(OUTPUT_FILE_PATH))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                existingRecords.add(line);
-            }
-        } catch (FileNotFoundException e) {
-            // 파일이 존재하지 않는 경우 무시
-        }
+        // 기존 데이터 제거 및 초기화
+        removeDuplicatesFromFile(OUTPUT_FILE_PATH);
 
         Connection conn = null;
         try {
@@ -72,11 +65,12 @@ public class HistoryService {
                     long visitTimeMicroseconds = rs.getLong("visit_time");
                     long visitTimeMillis = visitTimeMicroseconds / 1000L;
                     long epochTimeMillis = visitTimeMillis - 11644473600000L; // Windows epoch time 보정
-                    java.util.Date visitDate = new java.util.Date(epochTimeMillis);
+                    Date visitDate = new Date(epochTimeMillis);
 
                     String record = sdf.format(visitDate) + " - " + url;
 
-                    if (!existingRecords.contains(record)) {
+                    // 중복 데이터가 아닌 경우만 기록
+                    if (!isRecordAlreadyProcessed(record)) {
                         writer.write(record);
                         writer.newLine();
 
@@ -124,6 +118,9 @@ public class HistoryService {
             return CompletableFuture.completedFuture(null);
         }
 
+        // 기존 데이터 제거 및 초기화
+        removeDuplicatesFromFile(YOUTUBE_OUTPUT_FILE_PATH);
+
         try (BufferedReader youtubeReader = new BufferedReader(new FileReader(YOUTUBE_OUTPUT_FILE_PATH))) {
             String line;
             while ((line = youtubeReader.readLine()) != null) {
@@ -133,7 +130,7 @@ public class HistoryService {
                 if (url != null) {
                     System.out.println("Extracted URL: " + url);
                     // 비디오 세부 정보를 추출하여 파일에 저장
-                    extractYouTubeVideoDetails(url);
+                    extractYouTubeVideoDetails(url, line.substring(0, 19)); // 날짜와 함께 전달
                 } else {
                     System.out.println("No valid URL found in line.");
                 }
@@ -146,16 +143,13 @@ public class HistoryService {
             e.printStackTrace();
         }
 
+        // youtube_details.txt 파일을 날짜 순으로 정렬 및 출력
+        sortAndPrintYouTubeDetailsByDate();
+
         return CompletableFuture.completedFuture(null);
     }
 
-    /**
-     * YouTube 비디오의 제목, 썸네일 링크, 카테고리, 비디오 태그를 추출하여 `youtube_details.txt`에 저장합니다.
-     *
-     * @param url YouTube 비디오 URL
-     * @throws IOException 파일 입출력 예외
-     */
-    private void extractYouTubeVideoDetails(String url) throws IOException {
+    private void extractYouTubeVideoDetails(String url, String date) throws IOException {
         // URL이 비디오를 가리키는지 확인
         if (!url.contains("watch?v=")) {
             System.out.println("Skipping non-video URL: " + url);
@@ -216,10 +210,9 @@ public class HistoryService {
             System.out.println("Extracted Categories: " + categories);
             System.out.println("Extracted Tags: " + tags);
 
-
-            // 데이터가 존재하는 경우 파일에 저장
+            // 데이터가 존재하는 경우 파일에 저장 (날짜 포함)
             if (!title.isEmpty() && !thumbnail.isEmpty()) {
-                String details = String.format("Title: %s%nThumbnail: %s%nCategories: %s%nTags: %s%n", title, thumbnail, categories, tags);
+                String details = String.format("Date: %s%nTitle: %s%nThumbnail: %s%nCategories: %s%nTags: %s%n", date, title, thumbnail, categories, tags);
                 writer.write(details);
                 writer.newLine();
                 processedHashes.add(urlHash); // URL 해시를 처리된 리스트에 추가
@@ -236,56 +229,108 @@ public class HistoryService {
             try {
                 int exitCode = process.waitFor();
                 if (exitCode != 0) {
-                    System.out.println("yt-dlp process exited with error code: " + exitCode);
+                    System.out.println("yt-dlp process exited with non-zero code: " + exitCode);
                 }
             } catch (InterruptedException e) {
-                System.out.println("Error waiting for yt-dlp process to complete: " + e.getMessage());
+                System.out.println("yt-dlp process interrupted: " + e.getMessage());
+                Thread.currentThread().interrupt();
             }
         }
     }
 
-    /**
-     * URL을 해싱하여 고유한 식별자를 생성합니다.
-     *
-     * @param url 해싱할 URL
-     * @return URL의 해시값
-     */
+    private boolean isRecordAlreadyProcessed(String record) {
+        String hash = hashUrl(record);
+        if (processedHashes.contains(hash)) {
+            return true;
+        }
+        processedHashes.add(hash);
+        return false;
+    }
+
     private String hashUrl(String url) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(url.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(url.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
             }
-            return hexString.toString();
+            return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("MD5 algorithm not found", e);
         }
     }
 
+    private void removeDuplicatesFromFile(String filePath) throws IOException {
+        File inputFile = new File(filePath);
+        File tempFile = new File(filePath + ".tmp");
 
+        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
 
-    private void copyDatabase(File sourceFile, File destFile) throws IOException {
-        if (!destFile.exists()) {
-            destFile.createNewFile();
+            Set<String> lines = new LinkedHashSet<>();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+
+            for (String uniqueLine : lines) {
+                writer.write(uniqueLine);
+                writer.newLine();
+            }
         }
 
-        try (FileChannel source = new FileInputStream(sourceFile).getChannel();
-             FileChannel destination = new FileOutputStream(destFile).getChannel()) {
-            destination.transferFrom(source, 0, source.size());
+        if (!inputFile.delete()) {
+            throw new IOException("Failed to delete original file: " + inputFile.getAbsolutePath());
         }
-        System.out.println("Database copied successfully.");
+        if (!tempFile.renameTo(inputFile)) {
+            throw new IOException("Failed to rename temp file to original file: " + tempFile.getAbsolutePath());
+        }
     }
 
     private String extractUrlFromLine(String line) {
-        int urlStart = line.indexOf("https://");
-        if (urlStart != -1) {
-            return line.substring(urlStart);
+        String[] parts = line.split(" - ");
+        if (parts.length > 1) {
+            return parts[1];
+        }
+        return null;
+    }
+
+    private void sortAndPrintYouTubeDetailsByDate() throws IOException {
+        File file = new File(YOUTUBE_DETAILS_FILE_PATH);
+        if (!file.exists()) {
+            System.out.println("Warning: The YouTube details file does not exist.");
+            return;
         }
 
-        return null;
+        List<String> lines = Files.readAllLines(Paths.get(YOUTUBE_DETAILS_FILE_PATH));
+        lines.sort((line1, line2) -> {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String date1 = line1.split("\n")[0].substring(6);
+                String date2 = line2.split("\n")[0].substring(6);
+                Date d1 = (Date) sdf.parse(date1);
+                Date d2 = (Date) sdf.parse(date2);
+                return d2.compareTo(d1);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(YOUTUBE_DETAILS_FILE_PATH))) {
+            for (String line : lines) {
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+
+        System.out.println("YouTube details sorted by date.");
+    }
+
+    private void copyDatabase(File source, File dest) throws IOException {
+        try (FileChannel sourceChannel = new FileInputStream(source).getChannel();
+             FileChannel destChannel = new FileOutputStream(dest).getChannel()) {
+            destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+        }
     }
 }
