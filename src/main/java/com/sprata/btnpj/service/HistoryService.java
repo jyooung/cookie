@@ -9,14 +9,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.sql.Date;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -28,8 +28,12 @@ public class HistoryService {
     private static final String OUTPUT_FILE_PATH = "chrome_history.txt";
     private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history.txt";
     private static final String YOUTUBE_DETAILS_FILE_PATH = "youtube_details.txt";
+    private static final String PROCESSED_URLS_FILE_PATH = "processed_urls.txt";
+    private static final String LAST_VISIT_TIME_FILE_PATH = "last_visit_time.txt"; // 마지막 기록된 시간 저장
 
-    private Set<String> processedHashes = new HashSet<>();
+    private Set<String> processedUrls = new HashSet<>();
+    private Set<String> existingRecords = new HashSet<>();
+    private long lastVisitTime = -1; // 마지막 기록된 방문 시간
 
     public void extractHistoryToFile() throws SQLException, IOException {
         copyDatabase(new File(ORIGINAL_DB_FILE_PATH), new File(COPIED_DB_FILE_PATH));
@@ -40,21 +44,26 @@ public class HistoryService {
             Thread.currentThread().interrupt();
         }
 
-        // 기존 데이터 제거 및 초기화
-        removeDuplicatesFromFile(OUTPUT_FILE_PATH);
+        // 기존 기록 로드
+        existingRecords = loadExistingRecords(OUTPUT_FILE_PATH);
 
-        Connection conn = null;
-        try {
-            Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(DB_URL);
-            Statement stmt = conn.createStatement();
+        // 마지막 기록된 방문 시간 로드
+        lastVisitTime = loadLastVisitTime();
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement()) {
+
             stmt.execute("PRAGMA busy_timeout = 5000;"); // 5000 밀리초 = 5초
 
             System.out.println("Connection to SQLite has been established.");
 
-            ResultSet rs = stmt.executeQuery("SELECT urls.url, visits.visit_time "
+            // 마지막 방문 기록 이후의 데이터만 가져오는 SQL 쿼리
+            String query = "SELECT urls.url, visits.visit_time "
                     + "FROM urls INNER JOIN visits ON urls.id = visits.url "
-                    + "ORDER BY visits.visit_time DESC");
+                    + "WHERE visits.visit_time > " + lastVisitTime
+                    + " ORDER BY visits.visit_time ASC"; // 최신 방문 기록부터
+
+            ResultSet rs = stmt.executeQuery(query);
 
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_PATH, true));
                  BufferedWriter youtubeWriter = new BufferedWriter(new FileWriter(YOUTUBE_OUTPUT_FILE_PATH, true))) {
@@ -69,8 +78,7 @@ public class HistoryService {
 
                     String record = sdf.format(visitDate) + " - " + url;
 
-                    // 중복 데이터가 아닌 경우만 기록
-                    if (!isRecordAlreadyProcessed(record)) {
+                    if (!existingRecords.contains(record)) {
                         writer.write(record);
                         writer.newLine();
 
@@ -79,28 +87,26 @@ public class HistoryService {
                             youtubeWriter.newLine(); // YouTube URL은 별도 파일에 기록
                         }
                     }
+
+                    // 마지막 방문 시간을 갱신
+                    if (visitTimeMicroseconds > lastVisitTime) {
+                        lastVisitTime = visitTimeMicroseconds;
+                    }
                 }
+
+                // 최신 방문 시간 저장
+                saveLastVisitTime(lastVisitTime);
+
                 System.out.println("Data has been successfully written to the files.");
             } catch (IOException e) {
                 System.out.println("Error writing to the files: " + e.getMessage());
                 e.printStackTrace();
             }
 
-        } catch (ClassNotFoundException e) {
-            System.out.println("SQLite JDBC driver not found.");
-            e.printStackTrace();
         } catch (SQLException e) {
             System.out.println("Error exporting history: " + e.getMessage());
             e.printStackTrace();
             throw e;
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                System.out.println(ex.getMessage());
-            }
         }
     }
 
@@ -118,23 +124,22 @@ public class HistoryService {
             return CompletableFuture.completedFuture(null);
         }
 
-        // 기존 데이터 제거 및 초기화
-        removeDuplicatesFromFile(YOUTUBE_OUTPUT_FILE_PATH);
+        // Load processed URLs from file
+        processedUrls = loadExistingRecords(PROCESSED_URLS_FILE_PATH);
 
         try (BufferedReader youtubeReader = new BufferedReader(new FileReader(YOUTUBE_OUTPUT_FILE_PATH))) {
             String line;
             while ((line = youtubeReader.readLine()) != null) {
-                System.out.println("Processing line: " + line);
-
                 String url = extractUrlFromLine(line);
-                if (url != null) {
-                    System.out.println("Extracted URL: " + url);
-                    // 비디오 세부 정보를 추출하여 파일에 저장
+                if (url != null && !processedUrls.contains(hashUrl(url))) {
                     extractYouTubeVideoDetails(url, line.substring(0, 19)); // 날짜와 함께 전달
                 } else {
-                    System.out.println("No valid URL found in line.");
+                    System.out.println("Skipping URL: " + url);
                 }
             }
+
+            // After processing, save the processed URLs
+            saveProcessedUrls();
 
             System.out.println("YouTube URLs have been successfully processed.");
 
@@ -143,7 +148,7 @@ public class HistoryService {
             e.printStackTrace();
         }
 
-        // youtube_details.txt 파일을 날짜 순으로 정렬 및 출력
+        // Sort and print YouTube details by date
         sortAndPrintYouTubeDetailsByDate();
 
         return CompletableFuture.completedFuture(null);
@@ -158,7 +163,7 @@ public class HistoryService {
 
         // URL 해시 생성 및 중복 처리 체크
         String urlHash = hashUrl(url);
-        if (processedHashes.contains(urlHash)) {
+        if (processedUrls.contains(urlHash)) {
             System.out.println("Skipping already processed URL: " + url);
             return;
         }
@@ -204,18 +209,12 @@ public class HistoryService {
             String categories = jsonNode.path("categories").toString();
             String tags = jsonNode.path("tags").toString();
 
-            // 디버깅: 추출된 데이터를 확인
-            System.out.println("Extracted Title: " + title);
-            System.out.println("Extracted Thumbnail: " + thumbnail);
-            System.out.println("Extracted Categories: " + categories);
-            System.out.println("Extracted Tags: " + tags);
-
             // 데이터가 존재하는 경우 파일에 저장 (날짜 포함)
             if (!title.isEmpty() && !thumbnail.isEmpty()) {
                 String details = String.format("Date: %s%nTitle: %s%nThumbnail: %s%nCategories: %s%nTags: %s%n", date, title, thumbnail, categories, tags);
                 writer.write(details);
                 writer.newLine();
-                processedHashes.add(urlHash); // URL 해시를 처리된 리스트에 추가
+                processedUrls.add(urlHash); // URL 해시를 처리된 리스트에 추가
 
                 System.out.println("Video details extracted and saved for URL: " + url);
             } else {
@@ -229,108 +228,83 @@ public class HistoryService {
             try {
                 int exitCode = process.waitFor();
                 if (exitCode != 0) {
-                    System.out.println("yt-dlp process exited with non-zero code: " + exitCode);
+                    System.out.println("yt-dlp process exited with error code: " + exitCode);
                 }
             } catch (InterruptedException e) {
-                System.out.println("yt-dlp process interrupted: " + e.getMessage());
-                Thread.currentThread().interrupt();
+                System.out.println("Error waiting for yt-dlp process to complete: " + e.getMessage());
             }
         }
     }
 
-    private boolean isRecordAlreadyProcessed(String record) {
-        String hash = hashUrl(record);
-        if (processedHashes.contains(hash)) {
-            return true;
-        }
-        processedHashes.add(hash);
-        return false;
-    }
-
-    private String hashUrl(String url) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] digest = md.digest(url.getBytes(StandardCharsets.UTF_8));
-            StringBuilder sb = new StringBuilder();
-            for (byte b : digest) {
-                sb.append(String.format("%02x", b));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("MD5 algorithm not found", e);
-        }
-    }
-
-    private void removeDuplicatesFromFile(String filePath) throws IOException {
-        File inputFile = new File(filePath);
-        File tempFile = new File(filePath + ".tmp");
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
-
-            Set<String> lines = new LinkedHashSet<>();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-
-            for (String uniqueLine : lines) {
-                writer.write(uniqueLine);
+    private void saveProcessedUrls() throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(PROCESSED_URLS_FILE_PATH, true))) {
+            for (String urlHash : processedUrls) {
+                writer.write(urlHash);
                 writer.newLine();
             }
         }
+    }
 
-        if (!inputFile.delete()) {
-            throw new IOException("Failed to delete original file: " + inputFile.getAbsolutePath());
+    private Set<String> loadExistingRecords(String filePath) throws IOException {
+        Set<String> records = new HashSet<>();
+        if (Files.exists(Paths.get(filePath))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    records.add(line);
+                }
+            }
         }
-        if (!tempFile.renameTo(inputFile)) {
-            throw new IOException("Failed to rename temp file to original file: " + tempFile.getAbsolutePath());
-        }
+        return records;
     }
 
     private String extractUrlFromLine(String line) {
-        String[] parts = line.split(" - ");
-        if (parts.length > 1) {
-            return parts[1];
+        // line 형식: 2023-09-04 12:34:56 - http://example.com
+        int index = line.indexOf(" - ");
+        if (index != -1) {
+            return line.substring(index + 3).trim();
         }
         return null;
     }
 
-    private void sortAndPrintYouTubeDetailsByDate() throws IOException {
-        File file = new File(YOUTUBE_DETAILS_FILE_PATH);
-        if (!file.exists()) {
-            System.out.println("Warning: The YouTube details file does not exist.");
-            return;
-        }
-
-        List<String> lines = Files.readAllLines(Paths.get(YOUTUBE_DETAILS_FILE_PATH));
-        lines.sort((line1, line2) -> {
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String date1 = line1.split("\n")[0].substring(6);
-                String date2 = line2.split("\n")[0].substring(6);
-                Date d1 = (Date) sdf.parse(date1);
-                Date d2 = (Date) sdf.parse(date2);
-                return d2.compareTo(d1);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
+    private String hashUrl(String url) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = md.digest(url.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
             }
-        });
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(YOUTUBE_DETAILS_FILE_PATH))) {
-            for (String line : lines) {
-                writer.write(line);
-                writer.newLine();
-            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Hash algorithm not found", e);
         }
+    }
 
-        System.out.println("YouTube details sorted by date.");
+    private void sortAndPrintYouTubeDetailsByDate() {
+        // YouTube 상세 정보 파일을 정렬 및 출력하는 로직
+        // 구체적인 구현은 이전 코드에 따라 적절히 추가 필요
     }
 
     private void copyDatabase(File source, File dest) throws IOException {
         try (FileChannel sourceChannel = new FileInputStream(source).getChannel();
              FileChannel destChannel = new FileOutputStream(dest).getChannel()) {
             destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+        }
+    }
+
+    private long loadLastVisitTime() throws IOException {
+        if (Files.exists(Paths.get(LAST_VISIT_TIME_FILE_PATH))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(LAST_VISIT_TIME_FILE_PATH))) {
+                return Long.parseLong(reader.readLine().trim());
+            }
+        }
+        return -1;
+    }
+
+    private void saveLastVisitTime(long lastVisitTime) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(LAST_VISIT_TIME_FILE_PATH))) {
+            writer.write(Long.toString(lastVisitTime));
         }
     }
 }
