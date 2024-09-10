@@ -17,6 +17,7 @@ public class HistoryController {
 
     private final HistoryService historyService;
 
+
     @Autowired
     public HistoryController(HistoryService historyService) {
         this.historyService = historyService;
