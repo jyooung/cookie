@@ -1,5 +1,5 @@
-//현재 마지막 날짜를 기준으로 다음 세부 데이터를 불러오는 것은 가능해졌음
-// 하지만 해쉬맵을 사용하여 기존에 저장된 데이터라 세부 데이터를 불러오는 것에 에러가 생기는 것은 해결하지 않은 상태이다
+//현재 마지막 날짜를 기준으로 세부 데이터를 불러오고 해시맵을 사용해서 누락되는 내용 없이 데이터 잘 추출하고 있음
+//누락되는 데이터 없이 성공 했다!!
 package com.sprata.btnpj.service;
 
 import org.springframework.scheduling.annotation.Async;
@@ -300,13 +300,6 @@ public class HistoryService {
             return;
         }
 
-        // URL 해시 생성 및 중복 처리 체크
-        String urlHash = hashUrl(url);
-        if (processedHashes.contains(urlHash)) {
-            System.out.println("Skipping already processed URL: " + url);
-            return;
-        }
-
         // yt-dlp 프로세스 실행
         ProcessBuilder processBuilder = new ProcessBuilder("yt-dlp", "-j", url);
 
@@ -359,9 +352,6 @@ public class HistoryService {
                 String details = String.format("Date: %s%nTitle: %s%nThumbnail: %s%nCategories: %s%nTags: %s%n", date, title, thumbnail, categories, tags);
                 writer.write(details);
                 writer.newLine();
-                processedHashes.add(urlHash); // URL 해시를 처리된 리스트에 추가
-
-                System.out.println("Video details extracted and saved for URL: " + url);
             } else {
                 System.out.println("Skipping saving because the data is incomplete.");
             }
@@ -381,6 +371,7 @@ public class HistoryService {
             }
         }
     }
+
 
     private void removeDuplicatesFromFile(String filePath) throws IOException {
         File inputFile = new File(filePath);

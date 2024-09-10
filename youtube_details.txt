@@ -40,6 +40,12 @@ Thumbnail: https://i.ytimg.com/vi_webp/y-RnSm7VWVI/maxresdefault.webp
 Categories: ["Howto & Style"]
 Tags: ["figma","피그마","피그마 강좌","figma 강좌","피그마 텍스트","피그마 오토 레이아웃","figma 오토 레이아웃","피그마 auto layout","figma 컴포넌트","피그마 컴포넌트","피그마 인스턴스","피그마 텍스트 설정","피그마 반응형 컴포넌트","figma 반응형","피그마 리사이징","컴포넌트 리사이징","오노 레이아웃 리사이징","피그마 플러그인","피그마 플러그인 설치","피그마 플러그인 실행","피그마 frame","피그마 Constraints","피그마 frame constraints","피그마 아이콘","피그마 커뮤니티","figma Content Reel","피그마 rename","피그마 icon swap","피그마 버튼 컴포넌트","피그마 카드 컴포넌트","figma config 2022","피그마 config 2022","case study","링크드인","연정's figma","피그마 기초"]
 
+Date: 2024-05-10 21:28:34
+Title: 피그마 오토 레이아웃 기초, 이것만 보면 10분 컷  가능!
+Thumbnail: https://i.ytimg.com/vi/2e1QywG4n2o/maxresdefault.jpg
+Categories: ["Education"]
+Tags: []
+
 Date: 2024-05-10 21:35:46
 Title: 피그마 기초 강의 10분 안에 끝내기(컴포넌트 개념 이해) What is Figma? - 피그마(기초)
 Thumbnail: https://i.ytimg.com/vi_webp/ASlOHtOps-s/maxresdefault.webp
@@ -51,6 +57,12 @@ Title: 2024 유병재의 웃으면 안되는 생일파티 1부
 Thumbnail: https://i.ytimg.com/vi_webp/AzO4LM7qZns/maxresdefault.webp
 Categories: ["Comedy"]
 Tags: ["코미디","개그","라이브코미디","comedy","korea comedy"]
+
+Date: 2024-05-17 00:22:23
+Title: Figma 기획을 위한 기본 기능 확인하기
+Thumbnail: https://i.ytimg.com/vi_webp/uk55xLZE3g8/maxresdefault.webp
+Categories: ["People & Blogs"]
+Tags: ["Figma","피그마","서비스기획"]
 
 Date: 2024-05-19 19:21:52
 Title: [Playlist] 빡칠 때 듣기 좋은 국내힙합 모음, 빡센 국힙 플레이리스트
@@ -142,10 +154,16 @@ Thumbnail: https://i.ytimg.com/vi/Y97PxgMILWw/maxresdefault.jpg
 Categories: ["Music"]
 Tags: ["페스티벌","축제","재즈","재즈 플레이리스트","서울 재즈 페스티벌","SJF","서재페","퍼스널","플레이리스트","퍼스널 플레이리스트","personal","lauv"]
 
+Date: 2024-06-03 23:31:40
+Title: 𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 음악 페스티벌 라인업 모음🎷 ㅣ비비, 카더가든, 권진아, 소수빈, 이영지, 잔나비, 스텔라장, 폴킴, 하현상ㅣ퍼스널 플레이리스트
+Thumbnail: https://i.ytimg.com/vi/Y97PxgMILWw/maxresdefault.jpg
+Categories: ["Music"]
+Tags: ["페스티벌","축제","재즈","재즈 플레이리스트","서울 재즈 페스티벌","SJF","서재페","퍼스널","플레이리스트","퍼스널 플레이리스트","personal","lauv"]
+
 Date: 2024-06-05 19:05:43
 Title: [𝐏𝐋𝐀𝐘𝐋𝐈𝐒𝐓 ㅣ 돌이킬 수 있는] 왜겠어요? 왜겠어요.
 Thumbnail: https://i.ytimg.com/vi/xBNga-vR3xU/maxresdefault.jpg
-Categories: null
+Categories: ["People & Blogs"]
 Tags: []
 
 Date: 2024-06-05 19:06:28
@@ -165,4 +183,100 @@ Title: [𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭] 🎹말할 수 없는 비밀 OST l �
 Thumbnail: https://i.ytimg.com/vi/7KDfMh19718/maxresdefault.jpg
 Categories: ["Music"]
 Tags: ["말할수없는비밀","말할수없는비밀 ost","말할수없는비밀 노래","말할수없는비밀 secret 피아노","말할수없는비밀 피아노","말할수없는비밀 연탄곡","피아노 연주곡","잔잔한 피아노곡","피아노 연주곡 추천","말할수없는비밀 ost 피아노","그루트TV","잔잔한","잔잔한 노래","영화 ost","영화 ost 피아노","말할수없는비밀 배틀","피아노 곡 모음","영화 음악","광고없는","영화","ost","OST","플레이리스트","영화 노래","NICE AND RAINY","쏘플 soso playlist","세레나Serena","Noah","솧디","리플레이LEEPLAY","archiver","뭉게뭉게","오지랖무비","미들뻔","music","Dane​ Dehaan","김하올","짹참새","기몽초","playlist","Playlist","우울할때 듣는 음악","솧디 DJSOHEE","Old pop","잔잔한 음악","조용한 음악","감성","감성있는 노래","눈에띠네","by the way","가사없는 노래","잠이 안올때","가사 없는 잔잔한 노래"]
+
+Date: 2024-06-06 14:00:29
+Title: 박지윤X홍진호의 소름돋는 추리..다시봐도 소름쫙 #크라임씬
+Thumbnail: https://i.ytimg.com/vi/uygbcc1Kv2E/maxresdefault.jpg
+Categories: ["People & Blogs"]
+Tags: ["박지윤","홍진호","크라임씬","크라임씬2","박지윤홍진호","추리게임","두뇌게임","두뇌예능","지니어스","콩진호","지니어스홍진호","더지니어스","장동민","더지니어스장동민","박지윤여고추리반","여고추리반","뇌섹남녀","뇌섹남","뇌섹녀","하석진","데블스플랜","박지윤예능","홍진호예능"]
+
+Date: 2024-06-09 20:18:15
+Title: [𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭] 🎹말할 수 없는 비밀 OST l 𝚂𝚎𝚌𝚛𝚎𝚝 𝚙𝚕𝚊𝚢𝚕𝚒𝚜𝚝
+Thumbnail: https://i.ytimg.com/vi/7KDfMh19718/maxresdefault.jpg
+Categories: ["Music"]
+Tags: ["말할수없는비밀","말할수없는비밀 ost","말할수없는비밀 노래","말할수없는비밀 secret 피아노","말할수없는비밀 피아노","말할수없는비밀 연탄곡","피아노 연주곡","잔잔한 피아노곡","피아노 연주곡 추천","말할수없는비밀 ost 피아노","그루트TV","잔잔한","잔잔한 노래","영화 ost","영화 ost 피아노","말할수없는비밀 배틀","피아노 곡 모음","영화 음악","광고없는","영화","ost","OST","플레이리스트","영화 노래","NICE AND RAINY","쏘플 soso playlist","세레나Serena","Noah","솧디","리플레이LEEPLAY","archiver","뭉게뭉게","오지랖무비","미들뻔","music","Dane​ Dehaan","김하올","짹참새","기몽초","playlist","Playlist","우울할때 듣는 음악","솧디 DJSOHEE","Old pop","잔잔한 음악","조용한 음악","감성","감성있는 노래","눈에띠네","by the way","가사없는 노래","잠이 안올때","가사 없는 잔잔한 노래"]
+
+Date: 2024-06-09 20:18:28
+Title: [𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭] 🎹말할 수 없는 비밀 OST l 𝚂𝚎𝚌𝚛𝚎𝚝 𝚙𝚕𝚊𝚢𝚕𝚒𝚜𝚝
+Thumbnail: https://i.ytimg.com/vi/7KDfMh19718/maxresdefault.jpg
+Categories: ["Music"]
+Tags: ["말할수없는비밀","말할수없는비밀 ost","말할수없는비밀 노래","말할수없는비밀 secret 피아노","말할수없는비밀 피아노","말할수없는비밀 연탄곡","피아노 연주곡","잔잔한 피아노곡","피아노 연주곡 추천","말할수없는비밀 ost 피아노","그루트TV","잔잔한","잔잔한 노래","영화 ost","영화 ost 피아노","말할수없는비밀 배틀","피아노 곡 모음","영화 음악","광고없는","영화","ost","OST","플레이리스트","영화 노래","NICE AND RAINY","쏘플 soso playlist","세레나Serena","Noah","솧디","리플레이LEEPLAY","archiver","뭉게뭉게","오지랖무비","미들뻔","music","Dane​ Dehaan","김하올","짹참새","기몽초","playlist","Playlist","우울할때 듣는 음악","솧디 DJSOHEE","Old pop","잔잔한 음악","조용한 음악","감성","감성있는 노래","눈에띠네","by the way","가사없는 노래","잠이 안올때","가사 없는 잔잔한 노래"]
+
+Date: 2024-06-09 20:19:05
+Title: [𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭] 🎹말할 수 없는 비밀 OST l 𝚂𝚎𝚌𝚛𝚎𝚝 𝚙𝚕𝚊𝚢𝚕𝚒𝚜𝚝
+Thumbnail: https://i.ytimg.com/vi/7KDfMh19718/maxresdefault.jpg
+Categories: ["Music"]
+Tags: ["말할수없는비밀","말할수없는비밀 ost","말할수없는비밀 노래","말할수없는비밀 secret 피아노","말할수없는비밀 피아노","말할수없는비밀 연탄곡","피아노 연주곡","잔잔한 피아노곡","피아노 연주곡 추천","말할수없는비밀 ost 피아노","그루트TV","잔잔한","잔잔한 노래","영화 ost","영화 ost 피아노","말할수없는비밀 배틀","피아노 곡 모음","영화 음악","광고없는","영화","ost","OST","플레이리스트","영화 노래","NICE AND RAINY","쏘플 soso playlist","세레나Serena","Noah","솧디","리플레이LEEPLAY","archiver","뭉게뭉게","오지랖무비","미들뻔","music","Dane​ Dehaan","김하올","짹참새","기몽초","playlist","Playlist","우울할때 듣는 음악","솧디 DJSOHEE","Old pop","잔잔한 음악","조용한 음악","감성","감성있는 노래","눈에띠네","by the way","가사없는 노래","잠이 안올때","가사 없는 잔잔한 노래"]
+
+Date: 2024-06-09 20:51:42
+Title: 말할 수 없는 비밀 OST [ PLAYLIST ]
+Thumbnail: https://i.ytimg.com/vi/hVTzq9fEvRs/maxresdefault.jpg
+Categories: ["Music"]
+Tags: []
+
+Date: 2024-06-10 20:39:33
+Title: [ᴘʟᴀʏʟɪsᴛ] *:..｡♡ 몽글몽글 첫사랑 기억조작 대만 하이틴 노래 ♡｡..:*
+Thumbnail: https://i.ytimg.com/vi/5PCHRVBmf8w/sddefault.jpg
+Categories: ["People & Blogs"]
+Tags: ["플레이리스트","Playlist","하이틴","왕대륙","장난스런키스","대만","영화","노래","음악","나의소녀시대","첫사랑","청춘","로맨스","집에서함께음악들어요"]
+
+Date: 2024-06-10 20:39:49
+Title: [playlist] 우리가 사랑한 시간, 대만
+Thumbnail: https://i.ytimg.com/vi/fNHz4vTNy-8/maxresdefault.jpg
+Categories: ["Music"]
+Tags: ["대만영화","대만플레이리스트","허광한","하람두","채범희","당가휘","당가휘감독","Taiwan","플레이리스트","인디팝","팝송","pop","movie","기억해우리가사랑한시간","기우사시","플리","대만여행플리","대만플리","인디플리","에쎈띡","에쎈띡비디오"]
+
+Date: 2024-06-10 20:40:21
+Title: 말할 수 없는 비밀 OST [ PLAYLIST ]
+Thumbnail: https://i.ytimg.com/vi/hVTzq9fEvRs/maxresdefault.jpg
+Categories: ["Music"]
+Tags: []
+
+Date: 2024-06-11 00:40:56
+Title: 피그마 폰트 온라인에서도 문제없이 내 폰트 사용하기
+Thumbnail: https://i.ytimg.com/vi/e9hcmiB0Eug/maxresdefault.jpg
+Categories: ["Education"]
+Tags: ["#상세페이지디자인","#디자이너","#피그마","#figma","피그마강의","상세페이지","피그마버튼컴포넌트","웹디자인","피그마","figma","피그마 강의","figma 강의","상세페이지 디자인","피그마사용법","피그마컴포넌트","버튼 컴포넌트","피그마 폰트 추가","상세페이지 만들기","피그마 폰트 불러오기","피그마 폰트 플러그인","피그마 폰트 설치","폰트 설치 방법","피그마 폰트 적용","피그마 폰트설치 방법","피그마 설치"]
+
+Date: 2024-06-11 12:41:58
+Title: 성동구 댕벤져스 호두 만나봄 / 스브스뉴스
+Thumbnail: https://i.ytimg.com/vi_webp/qwmSWtkAIQo/maxresdefault.webp
+Categories: ["News & Politics"]
+Tags: ["반려견","포메라니안","포메","정원오","댕댕이","반려견순찰대","순찰견","호두","강아지","개","훈련","이슈","서울시","성동구","서울숲","순찰대호두","산책","순찰","순찰활동","패트롤","반려동물","해치펫트롤","서울반려견","보호자","뉴스","스브스뉴스"]
+
+Date: 2024-06-12 21:29:48
+Title: 말할 수 없는 비밀 OST [ PLAYLIST ]
+Thumbnail: https://i.ytimg.com/vi/hVTzq9fEvRs/maxresdefault.jpg
+Categories: ["Music"]
+Tags: []
+
+Date: 2024-06-13 06:41:03
+Title: 말할 수 없는 비밀 OST [ PLAYLIST ]
+Thumbnail: https://i.ytimg.com/vi/hVTzq9fEvRs/maxresdefault.jpg
+Categories: ["Music"]
+Tags: []
+
+Date: 2024-06-13 22:04:10
+Title: 구글 크롬(Google Chrome) 강의 #001 임시 파일은 어디(어떤 위치)에 저장되고 있을까?
+Thumbnail: https://i.ytimg.com/vi_webp/J52B1xQVuZ4/maxresdefault.webp
+Categories: ["Education"]
+Tags: ["크롬 임시파일","크롬 쿠키","chrome 기록","크롬 기록","크롬 임시 인터넷 파일 저장위치","크롬 임시파일 경로","크롬 캐시파일 경로","구글 캐시파일 위치"]
+
+Date: 2024-06-14 00:06:17
+Title: 채널걸고.. 내 인생에서 가장 재밌는 SBS 드라마 1위입니다. 시간 순삭 '지성'합니다~ [커넥션] 본 시리즈에 필적하는 몰입도 1황 드라마가 떴다..아 편집이 매우 행복해 극락
+Thumbnail: https://i.ytimg.com/vi_webp/0tf8e6yggLw/maxresdefault.webp
+Categories: ["Film & Animation"]
+Tags: ["고몽","리뷰","소개","영화","드라마","drama","movie"]
+
+Date: 2024-06-14 12:53:25
+Title: 24년도 최고 추천작, 하필 강력반 초 에이스 형사를 강력.범.죄 사건의 범인으로 만들어버린 암흑조직의 최후 [커넥션]ep3-4
+Thumbnail: https://i.ytimg.com/vi_webp/EM2HnuP5SLU/sddefault.webp
+Categories: ["Film & Animation"]
+Tags: ["고몽","리뷰","소개","영화","드라마","drama","movie","지성","jisung","커넥션","sbs","connection","kdrama"]
+
+Date: 2024-06-14 12:55:28
+Title: 24년도 최고 추천작, 하필 강력반 초 에이스 형사를 강력.범.죄 사건의 범인으로 만들어버린 암흑조직의 최후 [커넥션]ep3-4
+Thumbnail: https://i.ytimg.com/vi_webp/EM2HnuP5SLU/sddefault.webp
+Categories: ["Film & Animation"]
+Tags: ["고몽","리뷰","소개","영화","드라마","drama","movie","지성","jisung","커넥션","sbs","connection","kdrama"]
 
