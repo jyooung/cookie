@@ -1,5 +1,5 @@
 //현재 마지막 날짜를 기준으로 세부 데이터를 불러오고 해시맵을 사용해서 누락되는 내용 없이 데이터 잘 추출하고 있음
-//누락되는 데이터 없이 성공 했다!!
+//누락되는 데이터 없이 성공 했다
 package com.sprata.btnpj.service;
 
 import org.springframework.scheduling.annotation.Async;
@@ -28,9 +28,9 @@ public class HistoryService {
     private static final String ORIGINAL_DB_FILE_PATH = "C:/Users/LG/AppData/Local/Google/Chrome/User Data/Default/History";
     private static final String COPIED_DB_FILE_PATH = "C:/Users/LG/AppData/Local/Google/Chrome/User Data/Default/History_copy";
     private static final String DB_URL = "jdbc:sqlite:" + COPIED_DB_FILE_PATH;
-    private static final String OUTPUT_FILE_PATH = "chrome_history.txt";
-    private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history.txt";
-    private static final String YOUTUBE_DETAILS_FILE_PATH = "youtube_details.txt";
+    private static final String OUTPUT_FILE_PATH = "chrome_history3.txt";
+    private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history3.txt";
+    private static final String YOUTUBE_DETAILS_FILE_PATH = "youtube_details3.txt";
 
     private Map<String, Set<Long>> processedUrlsMap = new HashMap<>();
     private Set<String> processedHashes = new HashSet<>();
@@ -239,58 +239,6 @@ public class HistoryService {
     }
 
 
-    private String getLastProcessedDate() throws IOException {
-        File detailsFile = new File(YOUTUBE_DETAILS_FILE_PATH);
-        if (!detailsFile.exists() || detailsFile.length() == 0) {
-            return null;
-        }
-
-        try (RandomAccessFile file = new RandomAccessFile(detailsFile, "r")) {
-            long fileLength = file.length();
-            long pointer = fileLength - 1;
-            StringBuilder lineBuilder = new StringBuilder();
-            String lastDate = null;
-            boolean foundDate = false;
-
-            // 파일 끝에서부터 역방향으로 읽기
-            while (pointer >= 0) {
-                file.seek(pointer);
-                int readByte = file.readByte();
-                if (readByte == '\n') {
-                    String line = lineBuilder.reverse().toString().trim();
-                    lineBuilder.setLength(0); // 줄 처리 후 StringBuilder 초기화
-
-                    // 'Date: '로 시작하는 줄을 찾으면 그 날짜를 추출
-                    if (line.startsWith("Date: ")) {
-                        lastDate = line.substring(6, 25); // 'Date: ' 이후의 날짜 (yyyy-MM-dd HH:mm:ss) 추출
-                        foundDate = true;
-                        break;
-                    }
-                } else {
-                    lineBuilder.append((char) readByte);
-                }
-                pointer--;
-            }
-
-            // 마지막 줄 처리
-            if (!foundDate && lineBuilder.length() > 0) {
-                String line = lineBuilder.reverse().toString().trim();
-                if (line.startsWith("Date: ")) {
-                    lastDate = line.substring(6, 25);
-                }
-            }
-
-            // 마지막 날짜 출력
-            if (lastDate != null) {
-                System.out.println("추출된 마지막 날짜: " + lastDate);
-                return lastDate;
-            } else {
-                System.out.println("No valid date found in youtube_details.txt.");
-            }
-        }
-
-        return null;
-    }
 
 
     private void extractYouTubeVideoDetails(String url, String date) throws IOException {
@@ -372,6 +320,58 @@ public class HistoryService {
         }
     }
 
+    private String getLastProcessedDate() throws IOException {
+        File detailsFile = new File(YOUTUBE_DETAILS_FILE_PATH);
+        if (!detailsFile.exists() || detailsFile.length() == 0) {
+            return null;
+        }
+
+        try (RandomAccessFile file = new RandomAccessFile(detailsFile, "r")) {
+            long fileLength = file.length();
+            long pointer = fileLength - 1;
+            StringBuilder lineBuilder = new StringBuilder();
+            String lastDate = null;
+            boolean foundDate = false;
+
+            // 파일 끝에서부터 역방향으로 읽기
+            while (pointer >= 0) {
+                file.seek(pointer);
+                int readByte = file.readByte();
+                if (readByte == '\n') {
+                    String line = lineBuilder.reverse().toString().trim();
+                    lineBuilder.setLength(0); // 줄 처리 후 StringBuilder 초기화
+
+                    // 'Date: '로 시작하는 줄을 찾으면 그 날짜를 추출
+                    if (line.startsWith("Date: ")) {
+                        lastDate = line.substring(6, 25); // 'Date: ' 이후의 날짜 (yyyy-MM-dd HH:mm:ss) 추출
+                        foundDate = true;
+                        break;
+                    }
+                } else {
+                    lineBuilder.append((char) readByte);
+                }
+                pointer--;
+            }
+
+            // 마지막 줄 처리
+            if (!foundDate && lineBuilder.length() > 0) {
+                String line = lineBuilder.reverse().toString().trim();
+                if (line.startsWith("Date: ")) {
+                    lastDate = line.substring(6, 25);
+                }
+            }
+
+            // 마지막 날짜 출력
+            if (lastDate != null) {
+                System.out.println("추출된 마지막 날짜: " + lastDate);
+                return lastDate;
+            } else {
+                System.out.println("No valid date found in youtube_details.txt.");
+            }
+        }
+
+        return null;
+    }
 
     private void removeDuplicatesFromFile(String filePath) throws IOException {
         File inputFile = new File(filePath);

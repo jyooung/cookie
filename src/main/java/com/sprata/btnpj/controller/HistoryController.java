@@ -17,7 +17,6 @@ public class HistoryController {
 
     private final HistoryService historyService;
 
-
     @Autowired
     public HistoryController(HistoryService historyService) {
         this.historyService = historyService;
@@ -31,7 +30,7 @@ public class HistoryController {
     public ResponseEntity<String> extractHistory() {
         try {
             historyService.extractHistoryToFile();
-            return ResponseEntity.ok("Browser history extracted, deduplicated, and sorted successfully.");
+            return ResponseEntity.ok("Browser history extracted and sorted successfully.");
         } catch (SQLException | IOException e) {
             return ResponseEntity.status(500).body("Failed to extract browser history: " + e.getMessage());
         }
