@@ -1,3 +1,4 @@
+// 크롬 방문기록 불러오기 중복, 에러 없이
 package com.sprata.btnpj.service;
 
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ public class HistoryService {
 
     // 방문기록이 저장될 파일 경로
     private static final String OUTPUT_FILE_PATH = "chrome_history5.txt";
+
+    private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history5.txt";
 
     // 방문기록을 추출하고 파일에 저장하는 메서드
     public void extractHistoryToFile() throws SQLException, IOException {
