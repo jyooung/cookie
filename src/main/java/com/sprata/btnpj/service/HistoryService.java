@@ -1,111 +1,113 @@
-// 원래 크롬 방문 기록 가져오는 건 다 해결했다고 생각했는데 중복저장으로 생각되는 기록들이 너무 많았음
-// 현재는 방문시간과 url이 일치하는 데이터는 하나만 남기고 제거하는 작업했음
+// 크롬 방문기록 중복없음, 정렬 잘 됨
+// 유튜브 기록만 추출하는 것도 잘 되고 있음
 
 package com.sprata.btnpj.service;
 
 import org.springframework.stereotype.Service;
+
 import java.io.*;
 import java.nio.channels.FileChannel;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class HistoryService {
 
-    // 원본 크롬 방문기록 DB 경로 (Chrome의 History 파일 경로)
-    private static final String ORIGINAL_DB_FILE_PATH =
-            "C:/Users/LG/AppData/Local/Google/Chrome/User Data/Default/History";
-
-    // 복사본 DB 파일 경로 (SQLite에서 접근할 파일)
-    private static final String COPIED_DB_FILE_PATH =
-            "C:/Users/LG/AppData/Local/Google/Chrome/User Data/Default/History_copy";
-
-    // SQLite DB URL 생성 (복사된 DB 파일을 이용)
+    private static final String ORIGINAL_DB_FILE_PATH = "C:/Users/LG/AppData/Local/Google/Chrome/User Data/Default/History";
+    private static final String COPIED_DB_FILE_PATH = "C:/Users/LG/AppData/Local/Google/Chrome/User Data/Default/History_copy";
     private static final String DB_URL = "jdbc:sqlite:" + COPIED_DB_FILE_PATH;
-
-    // 크롬 방문기록을 저장할 파일 경로 (누적 저장)
     private static final String OUTPUT_FILE_PATH = "chrome_history5.txt";
+    private static final String YOUTUBE_OUTPUT_FILE_PATH = "chrome_youtube_history5.txt";
 
-    /**
-     * 크롬 방문기록을 추출하고 파일에 저장하는 메서드.
-     * 중복된 기록은 제외하고, 마지막 방문 이후의 새로운 기록만 추가로 저장.
-     */
+    // 마지막 방문 시간을 저장하기 위한 변수
+    private long lastVisitTime = 0;
+
     public void extractHistoryToFile() throws SQLException, IOException {
         // 1. 원본 DB를 복사하여 안전한 읽기 작업을 보장.
         copyDatabase(new File(ORIGINAL_DB_FILE_PATH), new File(COPIED_DB_FILE_PATH));
 
-        // 복사 후 500ms 대기 (파일 시스템 지연 문제 방지)
+        // 2. SQLite JDBC 드라이버 로드 및 데이터베이스 연결
+        Connection conn = null;
         try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // 인터럽트 시 스레드 종료 처리
-        }
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(DB_URL);
+            Statement stmt = conn.createStatement();
+            stmt.execute("PRAGMA busy_timeout = 5000;"); // 5000 밀리초 = 5초
 
-        // 2. 기존 기록 불러오기 및 마지막 방문 시간 확인
-        Set<String> existingRecords = new HashSet<>();  // 중복 방지를 위한 Set 사용
-        long lastVisitTime = loadExistingRecords(existingRecords);  // 마지막 방문 시간(밀리초)을 로드
+            System.out.println("Connection to SQLite has been established.");
 
-        // 마지막 방문 기록 출력 (디버깅용)
-        if (lastVisitTime > 0) {
-            String lastVisitDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(lastVisitTime));
-            System.out.println("가장 마지막 방문 날짜: " + lastVisitDate);
-        } else {
-            System.out.println("기존 기록이 없습니다. 모든 기록을 가져옵니다.");
-        }
+            // 3. 기존 기록 불러오기 및 마지막 방문 시간 갱신
+            Set<String> existingRecords = new HashSet<>();  // 중복 방지를 위한 Set
+            lastVisitTime = loadExistingRecords(existingRecords);  // 기존 기록을 로드하고 마지막 방문 시간 반환
 
-        // 3. DB에서 마지막 방문 이후의 새로운 기록만 조회
-        List<String> newRecords = new ArrayList<>();  // 새로운 방문기록 저장용 리스트
-
-        try (Connection conn = DriverManager.getConnection(DB_URL);
-             Statement stmt = conn.createStatement()) {
-
-            System.out.println("SQLite 연결 성공.");
-
-            // SQL 쿼리: 마지막 방문 이후의 기록만 가져오고 오름차순 정렬
+            // 4. SQL 쿼리 실행: 마지막 방문 이후의 기록만 가져오고 오름차순 정렬
             String query = "SELECT urls.url, visits.visit_time " +
                     "FROM urls INNER JOIN visits ON urls.id = visits.url " +
-                    "WHERE visits.visit_time / 1000 - 11644473600000 > " + lastVisitTime +
-                    " ORDER BY visits.visit_time ASC";
+                    "WHERE visits.visit_time > " + lastVisitTime + " " + // 신규 데이터만 선택
+                    "ORDER BY visits.visit_time ASC";
 
-            // 쿼리 실행 및 결과 처리
             ResultSet rs = stmt.executeQuery(query);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-            // ResultSet 순회하며 각 방문기록 처리
-            while (rs.next()) {
-                String url = rs.getString("url");  // 방문한 URL
-                long visitTimeMicroseconds = rs.getLong("visit_time");  // 방문 시간(마이크로초 단위)
-                long visitTimeMillis = visitTimeMicroseconds / 1000L - 11644473600000L;  // Windows epoch 보정
+            // 5. 파일에 기록하기 위한 BufferedWriter 초기화
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_PATH, true)); // 기존 파일에 추가
+                 BufferedWriter youtubeWriter = new BufferedWriter(new FileWriter(YOUTUBE_OUTPUT_FILE_PATH, true))) {
 
-                // "YYYY-MM-DD HH:MM:SS - URL" 형식으로 기록 생성
-                String record = sdf.format(new Date(visitTimeMillis)) + " - " + url;
+                // 6. ResultSet 순회하며 각 방문기록 처리
+                while (rs.next()) {
+                    String url = rs.getString("url");
+                    long visitTimeMicroseconds = rs.getLong("visit_time");
 
-                // Set에 없는 새로운 기록만 추가
-                if (!existingRecords.contains(record)) {
-                    newRecords.add(record);  // 새로운 기록을 리스트에 추가
+                    // 마이크로초를 밀리초로 변환 및 Unix epoch 기준으로 변환
+                    long visitTimeMillis = visitTimeMicroseconds / 1000L;
+                    long epochTimeMillis = visitTimeMillis - 11644473600000L;
+
+                    // Date 객체로 변환
+                    java.util.Date visitDate = new java.util.Date(epochTimeMillis);
+                    String record = sdf.format(visitDate) + " - " + url;
+
+                    // 7. 중복 기록이 아닌 경우에만 파일에 기록
+                    if (!existingRecords.contains(record)) {
+                        writer.write(record);
+                        writer.newLine();
+
+                        // 유튜브 링크만 필터링하여 다른 파일에 기록
+                        if (url.contains("https://www.youtube.com") || url.contains("youtube.com")) {
+                            youtubeWriter.write(record);
+                            youtubeWriter.newLine();
+                        }
+
+                        // 8. 마지막 방문 시간을 갱신
+                        lastVisitTime = Math.max(lastVisitTime, visitTimeMillis);
+                    }
                 }
+                System.out.println("Data has been successfully written to the file.");
+            } catch (IOException e) {
+                System.out.println("Error writing to the file: " + e.getMessage());
             }
 
+        } catch (ClassNotFoundException e) {
+            System.out.println("SQLite JDBC driver not found.");
         } catch (SQLException e) {
-            System.out.println("데이터베이스 오류: " + e.getMessage());
-            throw e;  // 예외 발생 시 SQLException 던지기
+            System.out.println("Error exporting history: " + e.getMessage());
+            throw e;
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                System.out.println(ex.getMessage());
+            }
         }
-
-        // 4. 새로운 기록을 오름차순으로 정렬
-        Collections.sort(newRecords);
-
-        // 5. 정렬된 기록을 파일에 추가 저장 (기존 기록에 누적)
-        appendRecordsToFile(newRecords, OUTPUT_FILE_PATH);
     }
 
-    /**
-     * 기존 방문기록 파일에서 기록을 로드하고 마지막 방문 시간을 반환.
-     * @param existingRecords 기존 기록을 저장할 Set
-     * @return 마지막 방문 시간(밀리초)
-     */
-    // 기존 방문기록을 로드하고 마지막 방문 시간을 반환하는 메서드
+    // 기존 방문 기록을 로드하고 마지막 방문 시간을 반환하는 메서드
     private long loadExistingRecords(Set<String> existingRecords) {
         long lastVisitTime = 0; // 마지막 방문 시간을 저장할 변수 초기화
         List<String> uniqueRecords = new ArrayList<>(); // 중복 제거를 위한 List 생성
@@ -122,10 +124,11 @@ public class HistoryService {
                 String[] parts = line.split(" - ");
                 if (parts.length == 2) { // 올바른 형식인지 확인
                     String recordKey = parts[0] + " - " + parts[1]; // 유일한 키 생성
+
                     // 기존 방문 기록에 추가
                     if (!existingRecords.contains(recordKey)) {
                         uniqueRecords.add(recordKey); // 중복되지 않은 기록만 추가
-                        existingRecords.add(recordKey); // 중복 방지 Set에도 추가
+                        existingRecords.add(recordKey); // 중복 방지 Set에 추가
                     }
                 }
 
@@ -138,7 +141,7 @@ public class HistoryService {
                 }
             }
         } catch (FileNotFoundException e) {
-            // 파일이 존재하지 않을 경우 처리
+            // 파일이 존재하지 않을 경우 아무 작업도 하지 않음 (초기 실행)
             System.out.println("기존 방문기록 파일이 없습니다. 새로 생성됩니다.");
         } catch (IOException | java.text.ParseException e) {
             // 입출력 오류나 날짜 파싱 오류 처리
@@ -147,14 +150,13 @@ public class HistoryService {
 
         // 중복 제거 후 유일한 기록을 오름차순으로 정렬하여 파일에 다시 쓰기
         writeUniqueRecordsToFile(uniqueRecords); // 중복이 제거된 유일한 기록을 파일에 저장
-
         return lastVisitTime; // 마지막 방문 시간 반환
     }
 
     // 유일한 기록을 chrome_history5.txt 파일에 쓰는 메서드
     private void writeUniqueRecordsToFile(List<String> uniqueRecords) {
         // 유일한 기록을 오름차순으로 정렬
-        Collections.sort(uniqueRecords, (a, b) -> {
+        uniqueRecords.sort((a, b) -> {
             String dateA = a.split(" - ")[0]; // 첫 번째 기록의 날짜 부분
             String dateB = b.split(" - ")[0]; // 두 번째 기록의 날짜 부분
             return dateA.compareTo(dateB); // 날짜 순서 비교
@@ -167,45 +169,21 @@ public class HistoryService {
                 writer.newLine(); // 다음 줄로 이동
             }
             System.out.println("중복이 제거된 방문기록이 날짜 순서로 저장되었습니다."); // 완료 메시지 출력
-        } catch (IOException e) {
-            // 파일 쓰기 오류 처리
+        } catch (IOException e) { // 파일 쓰기 오류 처리
             System.out.println("파일 쓰기 오류: " + e.getMessage());
         }
     }
 
-    /**
-     * 새로운 기록을 파일에 추가 저장하는 메서드 (누적 저장).
-     * @param records 추가할 새로운 기록 리스트
-     * @param filePath 파일 경로
-     */
-    private void appendRecordsToFile(List<String> records, String filePath) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
-            for (String record : records) {
-                writer.write(record);  // 기록 작성
-                writer.newLine();  // 줄바꿈 추가
-            }
-            System.out.println(filePath + "에 새로운 기록이 저장되었습니다.");
-        } catch (IOException e) {
-            System.out.println("파일 쓰기 오류: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 데이터베이스 파일을 복사하는 메서드.
-     * @param sourceFile 원본 파일
-     * @param destFile 대상 파일
-     * @throws IOException 파일 복사 중 오류 발생 시
-     */
+    // 데이터베이스 파일을 복사하는 메서드
     private void copyDatabase(File sourceFile, File destFile) throws IOException {
         if (!destFile.exists()) {
-            destFile.createNewFile();  // 대상 파일이 없으면 새로 생성
+            destFile.createNewFile();
         }
 
-        // 파일 채널을 사용해 파일 복사
         try (FileChannel source = new FileInputStream(sourceFile).getChannel();
              FileChannel destination = new FileOutputStream(destFile).getChannel()) {
-            destination.transferFrom(source, 0, source.size());  // 파일 복사 수행
+            destination.transferFrom(source, 0, source.size());
         }
-        System.out.println("데이터베이스가 성공적으로 복사되었습니다.");
+        System.out.println("Database copied successfully.");
     }
 }
