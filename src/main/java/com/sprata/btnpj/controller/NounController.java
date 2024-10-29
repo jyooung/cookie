@@ -9,15 +9,42 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RequestMapping("/api/cate") // API 엔드포인트의 기본 경로 설정
-@RestController // 이 클래스가 RESTful 웹 서비스의 컨트롤러임을 나타냄
+/**
+ * NounController 클래스는 비디오 데이터와 상위 카테고리를 가져오는 RESTful API입니다.
+ */
+@RequestMapping("/api/cate") // 기본 API 경로 설정
+@RestController // 이 클래스가 REST 컨트롤러임을 나타냄
 public class NounController {
 
-    @Autowired // NounService를 자동 주입
-    private NounService nounService;
+    // NounService 객체 자동 주입
+    private final NounService nounService;
 
-    @GetMapping("/top-categories") // HTTP GET 요청을 처리하는 메소드
-    public List<JsonNode> getTopCategories() {
-        return nounService.getVideoDataAsJson(); // 비디오 데이터를 JSON 형식으로 반환
+    // NounService 의존성 주입
+    @Autowired
+    public NounController(NounService nounService) {
+        this.nounService = nounService;
+    }
+
+    /**
+     * 비디오 데이터에서 추출된 명사와 관련된 모든 비디오 데이터를 반환하는 메소드.
+     *
+     * @return 명사가 추출된 비디오 데이터 리스트
+     */
+    @GetMapping("/video-data-noun") // GET 요청에 대한 처리 메소드
+    public List<JsonNode> getVideoDataWithExtractedNouns() {
+        // NounService의 getVideoDataWithExtractedNouns 메소드를 호출하여
+        // 명사 추출된 비디오 데이터를 JSON 형식으로 반환
+        return nounService.getVideoDataWithExtractedNouns();
+    }
+
+    /**
+     * 각 비디오 데이터에서 상위 10개 카테고리를 반환하는 메소드.
+     *
+     * @return 상위 10개 카테고리 리스트
+     */
+    @GetMapping("/top-categories") // 상위 카테고리 조회 엔드포인트
+    public List<String> getTopSubCategories() {
+        // NounService의 getTopSubCategories 메소드를 호출하여 상위 10개 카테고리를 반환
+        return nounService.getTopSubCategories();
     }
 }
