@@ -1,15 +1,24 @@
 // ex1_details.txt(유튜브 세부 데이터 2개 정도만 넣어놓은 예시 파일) 파일을 json 형식으로 바꿨음
 // 웹에 실행시키면 실행결과 출력했음
+// 상위카테고리 리스트 생성하고 하위 카테고리 상위 10개 리스트 생성하기 완료
+// 바로 이전 커밋이 하위 카테고리 리스트 생성까지임
+// 이제 상위 카테고리와 하위 카테고리에 모두 적합한 영상 분류하면 끝
+
 package com.sprata.btnpj.service;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Service;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class NounService {
@@ -17,65 +26,181 @@ public class NounService {
     // YouTube 데이터가 저장된 파일 경로
     private static final String DATA_FILE_PATH = "C:/SpringProject/personalCookie/btnPJ/ex1_details.txt";
 
+    // Python 스크립트에서 입력 데이터로 사용할 JSON 파일 경로
+    private static final String INPUT_JSON_PATH = "C:/SpringProject/personalCookie/btnPJ/input.json";
+
+    // Python 스크립트의 출력 결과를 받을 JSON 파일 경로
+    private static final String OUTPUT_JSON_PATH = "C:/SpringProject/personalCookie/btnPJ/output.json";
+
     /**
-     * 비디오 데이터를 JSON 형식의 List로 반환하는 메소드
+     * ex1_details.txt 파일의 데이터를 JSON 형식으로 변환하여 input.json 파일로 저장하고
+     * Python 스크립트를 실행하여 output.json에 저장된 결과를 읽어 반환
+     *
+     * @return Python 스크립트를 통해 명사가 추출된 비디오 데이터 리스트
+     */
+    public List<JsonNode> getVideoDataWithExtractedNouns() {
+        // ex1_details.txt 파일을 읽어 JSON 형식으로 변환된 데이터 리스트를 가져옴
+        List<JsonNode> videoDataList = parseVideoDataFromFile();
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            // 비디오 데이터 리스트를 input.json 파일로 저장하여 Python 스크립트에 전달
+            mapper.writeValue(new FileWriter(INPUT_JSON_PATH), videoDataList);
+
+            // Python 스크립트 실행하여 명사 추출 작업 수행
+            String pythonScriptPath = "C:/SpringProject/personalCookie/btnPJ/src/main/resources/python/noun_extractor.py"; // 스크립트 경로 지정
+            Process process = Runtime.getRuntime().exec("python " + pythonScriptPath);
+            process.waitFor(); // Python 스크립트 실행 완료될 때까지 대기
+
+            // Python 스크립트의 결과를 output.json 파일에서 읽음
+            List<JsonNode> processedData;
+            try (BufferedReader reader = new BufferedReader(new FileReader(OUTPUT_JSON_PATH))) {
+                // output.json 파일을 List<JsonNode> 형식으로 읽어들이기
+                processedData = mapper.readValue(reader, mapper.getTypeFactory().constructCollectionType(List.class, JsonNode.class));
+            }
+
+            // 결과를 반환
+            return processedData;
+
+        } catch (Exception e) {
+            e.printStackTrace(); // 예외 발생 시 스택 트레이스 출력
+        }
+
+        // 오류가 발생했을 경우 원본 비디오 데이터를 반환
+        return videoDataList;
+    }
+
+    /**
+     * ex1_details.txt 파일을 읽어 JSON 형식의 List로 변환하는 메서드
      *
      * @return JSON 형식의 비디오 데이터 리스트
      */
-    public List<JsonNode> getVideoDataAsJson() {
-        List<JsonNode> videoDataList = new ArrayList<>(); // 결과를 저장할 리스트
+    private List<JsonNode> parseVideoDataFromFile() {
+        List<JsonNode> videoDataList = new ArrayList<>(); // 비디오 데이터 리스트 초기화
 
         try (BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE_PATH))) {
-            String line;
-            ObjectMapper mapper = new ObjectMapper(); // JSON 변환에 사용
-            ObjectNode videoNode = null; // 각 비디오 항목을 저장할 JSON 객체
+            String line; // 파일의 각 줄을 저장할 문자열 변수
+            ObjectMapper mapper = new ObjectMapper(); // JSON 객체를 생성하기 위한 ObjectMapper
+            ObjectNode videoNode = null; // 각 비디오 항목을 위한 JSON 객체
 
-            // 파일을 한 줄씩 읽어들임
+            // 파일을 한 줄씩 읽음
             while ((line = reader.readLine()) != null) {
-
-                // 빈 줄을 만나면 현재 비디오 항목을 리스트에 추가하고 초기화
                 if (line.isEmpty()) {
+                    // 빈 줄을 만나면 현재 비디오 항목을 리스트에 추가하고 초기화
                     if (videoNode != null) {
-                        videoDataList.add(videoNode); // 비디오 항목을 리스트에 추가
+                        videoDataList.add(videoNode);
                         videoNode = null; // 새로운 항목을 위해 초기화
                     }
-                } else if (line.startsWith("Date:")) { // 날짜 라인을 찾음
-                    videoNode = mapper.createObjectNode(); // 새로운 비디오 항목을 위한 JSON 객체 생성
+                } else if (line.startsWith("Date:")) {
+                    // 새로운 비디오 항목을 위한 JSON 객체 생성
+                    videoNode = mapper.createObjectNode();
                     videoNode.put("Date", line.substring(6).trim()); // "Date" 필드를 JSON 객체에 추가
-                } else if (line.startsWith("URL:")) { // URL 라인을 찾음
+                } else if (line.startsWith("URL:")) {
+                    // URL 필드를 JSON 객체에 추가
                     videoNode.put("URL", line.substring(5).trim()); // "URL" 필드를 JSON 객체에 추가
-                } else if (line.startsWith("Title:")) { // 제목 라인을 찾음
+                } else if (line.startsWith("Title:")) {
+                    // Title 필드를 JSON 객체에 추가
                     videoNode.put("Title", line.substring(7).trim()); // "Title" 필드를 JSON 객체에 추가
-                } else if (line.startsWith("Thumbnail:")) { // 썸네일 라인을 찾음
+                } else if (line.startsWith("Thumbnail:")) {
+                    // Thumbnail 필드를 JSON 객체에 추가
                     videoNode.put("Thumbnail", line.substring(11).trim()); // "Thumbnail" 필드를 JSON 객체에 추가
-                } else if (line.startsWith("Categories:")) { // 카테고리 라인을 찾음
+                } else if (line.startsWith("Categories:")) {
+                    // Categories 필드를 JSON 배열로 추가
                     String categoriesString = line.substring(12).trim();
-                    ArrayNode categoriesNode = mapper.createArrayNode(); // 카테고리를 배열 형태로 저장
+                    ArrayNode categoriesNode = mapper.createArrayNode(); // 카테고리 배열 생성
                     categoriesString = categoriesString.substring(1, categoriesString.length() - 1); // 괄호 제거
                     for (String category : categoriesString.split(",")) {
-                        categoriesNode.add(category.trim().replace("\"", "")); // 카테고리 문자열에서 큰따옴표 제거 후 추가
+                        categoriesNode.add(category.trim().replace("\"", "")); // 문자열에서 큰따옴표 제거 후 추가
                     }
-                    videoNode.set("Categories", categoriesNode); // "Categories" 배열을 JSON 객체에 추가
-                } else if (line.startsWith("Tags:")) { // 태그 라인을 찾음
+                    videoNode.set("Categories", categoriesNode); // "Categories" 필드를 JSON 객체에 추가
+                } else if (line.startsWith("Tags:")) {
+                    // Tags 필드를 JSON 배열로 추가
                     String tagsString = line.substring(6).trim();
-                    ArrayNode tagsNode = mapper.createArrayNode(); // 태그를 배열 형태로 저장
+                    ArrayNode tagsNode = mapper.createArrayNode(); // 태그 배열 생성
                     tagsString = tagsString.substring(1, tagsString.length() - 1); // 괄호 제거
                     for (String tag : tagsString.split(",")) {
-                        tagsNode.add(tag.trim().replace("\"", "")); // 태그 문자열에서 큰따옴표 제거 후 추가
+                        tagsNode.add(tag.trim().replace("\"", "")); // 문자열에서 큰따옴표 제거 후 추가
                     }
-                    videoNode.set("Tags", tagsNode); // "Tags" 배열을 JSON 객체에 추가
+                    videoNode.set("Tags", tagsNode); // "Tags" 필드를 JSON 객체에 추가
                 }
             }
 
-            // 파일의 마지막 비디오 항목이 리스트에 추가되지 않은 경우 추가
+            // 마지막 비디오 항목이 추가되지 않은 경우 추가
             if (videoNode != null) {
                 videoDataList.add(videoNode); // 마지막 비디오 항목을 리스트에 추가
             }
 
         } catch (Exception e) {
-            e.printStackTrace(); // 예외가 발생하면 콘솔에 오류 메시지 출력
+            e.printStackTrace(); // 예외 발생 시 스택 트레이스 출력
         }
 
         return videoDataList; // JSON 형식의 비디오 데이터 리스트 반환
+    }
+
+    /**
+     * output.json에서 각 URL에 해당하는 ExtractedNouns 필드를 모두 더하여 하위 카테고리 리스트를 생성하고
+     * 각 카테고리의 빈도수를 계산하여 상위 10개 카테고리를 반환하는 메서드
+     *
+     * @return 상위 10개 카테고리 리스트
+     */
+    public List<String> getTopSubCategories() {
+        List<JsonNode> extractedData = getVideoDataWithExtractedNouns(); // 추출된 데이터 가져오기
+        Map<String, Integer> categoryFrequencyMap = new HashMap<>(); // 카테고리 빈도수 저장을 위한 HashMap
+
+        // 각 비디오 데이터에서 ExtractedNouns를 기반으로 카테고리 빈도수 계산
+        for (JsonNode videoData : extractedData) {
+            JsonNode extractedNouns = videoData.get("ExtractedNouns"); // ExtractedNouns 필드 가져오기
+            if (extractedNouns != null && extractedNouns.isArray()) {
+                for (JsonNode noun : extractedNouns) {
+                    String category = noun.asText(); // 카테고리 이름 가져오기
+                    // 카테고리 빈도수 증가
+                    categoryFrequencyMap.put(category, categoryFrequencyMap.getOrDefault(category, 0) + 1);
+                }
+            }
+        }
+
+        // 해시맵의 내용을 출력 (디버깅 용도)
+        System.out.println("Category Frequency Map: " + categoryFrequencyMap);
+
+        // 카테고리 빈도수를 기준으로 정렬하여 상위 10개 카테고리 추출
+        return categoryFrequencyMap.entrySet()
+                .stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())) // 빈도수 내림차순 정렬
+                .limit(10) // 상위 10개만 선택
+                .map(Map.Entry::getKey) // 카테고리 이름만 가져오기
+                .toList(); // List<String>으로 변환하여 반환
+    }
+
+    /**
+     * input.json의 각 데이터의 Categories 필드에서 상위 카테고리 리스트를 생성하고,
+     * 각 상위 카테고리의 빈도수를 계산하여 내림차순으로 정렬된 상위 카테고리 리스트를 반환하는 메서드
+     *
+     * @return 내림차순으로 정렬된 상위 카테고리 리스트
+     */
+    public List<String> getTopMainCategories() {
+        List<JsonNode> extractedData = getVideoDataWithExtractedNouns(); // 추출된 데이터 가져오기
+        Map<String, Integer> mainCategoryFrequencyMap = new HashMap<>(); // 상위 카테고리 빈도수 저장을 위한 HashMap
+
+        // 각 비디오 데이터에서 Categories 필드 기반으로 상위 카테고리 빈도수 계산
+        for (JsonNode videoData : extractedData) {
+            JsonNode categories = videoData.get("Categories"); // Categories 필드 가져오기
+            if (categories != null && categories.isArray()) {
+                for (JsonNode category : categories) {
+                    String mainCategory = category.asText(); // 상위 카테고리 이름 가져오기
+                    // 상위 카테고리 빈도수 증가
+                    mainCategoryFrequencyMap.put(mainCategory, mainCategoryFrequencyMap.getOrDefault(mainCategory, 0) + 1);
+                }
+            }
+        }
+
+        // 해시맵의 내용을 출력 (디버깅 용도)
+        System.out.println("Main Category Frequency Map: " + mainCategoryFrequencyMap);
+
+        // 카테고리 빈도수를 기준으로 정렬하여 상위 카테고리 추출
+        return mainCategoryFrequencyMap.entrySet()
+                .stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())) // 빈도수 내림차순 정렬
+                .map(Map.Entry::getKey) // 상위 카테고리 이름만 가져오기
+                .toList(); // List<String>으로 변환하여 반환
     }
 }

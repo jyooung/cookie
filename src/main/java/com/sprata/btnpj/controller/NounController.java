@@ -38,13 +38,24 @@ public class NounController {
     }
 
     /**
-     * 각 비디오 데이터에서 상위 10개 카테고리를 반환하는 메소드.
+     * 각 비디오 데이터에서 상위 10개 하위 카테고리를 반환하는 메소드.
      *
-     * @return 상위 10개 카테고리 리스트
+     * @return 상위 10개 하위 카테고리 리스트
      */
-    @GetMapping("/top-categories") // 상위 카테고리 조회 엔드포인트
+    @GetMapping("/top-sub-categories") // 하위 카테고리 조회 엔드포인트
     public List<String> getTopSubCategories() {
-        // NounService의 getTopSubCategories 메소드를 호출하여 상위 10개 카테고리를 반환
+        // NounService의 getTopSubCategories 메소드를 호출하여 상위 10개 하위 카테고리를 반환
         return nounService.getTopSubCategories();
+    }
+
+    /**
+     * 각 비디오 데이터에서 상위 카테고리를 반환하는 메소드.
+     *
+     * @return 상위 카테고리 리스트
+     */
+    @GetMapping("/top-main-categories") // 상위 카테고리 조회 엔드포인트
+    public List<String> getTopMainCategories() {
+        // NounService의 getTopMainCategories 메소드를 호출하여 상위 카테고리를 반환
+        return nounService.getTopMainCategories();
     }
 }
