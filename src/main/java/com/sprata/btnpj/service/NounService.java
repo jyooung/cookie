@@ -54,7 +54,7 @@ public class NounService {
 
             // Python 스크립트의 결과를 output.json 파일에서 읽음
             List<JsonNode> processedData;
-            try (BufferedReader reader = new BufferedReader(new FileReader(OUTPUT_JSON_PATH))) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(OUTPUT_JSON_PATH ))) {
                 // output.json 파일을 List<JsonNode> 형식으로 읽어들이기
                 processedData = mapper.readValue(reader, mapper.getTypeFactory().constructCollectionType(List.class, JsonNode.class));
             }
@@ -152,9 +152,11 @@ public class NounService {
             JsonNode extractedNouns = videoData.get("ExtractedNouns"); // ExtractedNouns 필드 가져오기
             if (extractedNouns != null && extractedNouns.isArray()) {
                 for (JsonNode noun : extractedNouns) {
-                    String category = noun.asText(); // 카테고리 이름 가져오기
-                    // 카테고리 빈도수 증가
-                    categoryFrequencyMap.put(category, categoryFrequencyMap.getOrDefault(category, 0) + 1);
+                    String category = noun.asText().trim(); // 카테고리 이름 가져오기
+                    if (!category.isEmpty()) { // 빈 문자열이 아닌 경우에만 추가
+                        // 카테고리 빈도수 증가
+                        categoryFrequencyMap.put(category, categoryFrequencyMap.getOrDefault(category, 0) + 1);
+                    }
                 }
             }
         }
@@ -203,4 +205,68 @@ public class NounService {
                 .map(Map.Entry::getKey) // 상위 카테고리 이름만 가져오기
                 .toList(); // List<String>으로 변환하여 반환
     }
+    /**
+     * 상위 카테고리와 하위 카테고리 구조를 생성하고, 각 카테고리에 포함된 영상 객체를 정리하여 콘솔에 출력하는 메서드
+     */
+    public void generateCategoryStructure() {
+        // 상위 카테고리와 하위 카테고리 리스트 가져오기
+        List<String> topMainCategories = getTopMainCategories(); // 상위 카테고리 리스트
+        List<String> topSubCategories = getTopSubCategories(); // 하위 카테고리 리스트
+
+        // 카테고리 구조를 저장할 JSON 객체 생성
+        ObjectMapper mapper = new ObjectMapper();
+        ArrayNode categoriesArrayNode = mapper.createArrayNode(); // 상위 카테고리를 위한 배열 노드
+
+        // 각 상위 카테고리에 대해 하위 카테고리와 영상 객체를 포함한 구조 생성
+        for (String mainCategory : topMainCategories) {
+            ObjectNode mainCategoryNode = mapper.createObjectNode(); // 상위 카테고리 노드 생성
+            mainCategoryNode.put("mainCategory", mainCategory); // 상위 카테고리 이름 설정
+
+            ArrayNode subCategoriesArrayNode = mapper.createArrayNode(); // 하위 카테고리를 위한 배열 노드
+
+            // 하위 카테고리를 최대 10개까지 추가
+            for (int i = 0; i < Math.min(topSubCategories.size(), 10); i++) {
+                String subCategory = topSubCategories.get(i); // 하위 카테고리 가져오기
+                ObjectNode subCategoryNode = mapper.createObjectNode(); // 하위 카테고리 노드 생성
+                subCategoryNode.put("subCategory", subCategory); // 하위 카테고리 이름 설정
+
+                // 해당 하위 카테고리에 속하는 영상 객체 리스트 생성
+                ArrayNode videoObjectsArrayNode = mapper.createArrayNode(); // 영상 객체 배열 노드 생성
+                List<JsonNode> extractedData = getVideoDataWithExtractedNouns(); // 추출된 영상 데이터 가져오기
+
+                // 각 영상 객체를 하위 카테고리에 추가
+                for (JsonNode videoData : extractedData) {
+                    JsonNode categories = videoData.get("Categories"); // 각 영상의 카테고리 가져오기
+                    if (categories != null && categories.isArray()) {
+                        // 영상이 현재 하위 카테고리에 속하는 경우
+                        for (JsonNode category : categories) {
+                            if (category.asText().equals(subCategory)) { // 하위 카테고리와 일치하는지 확인
+                                ObjectNode videoObjectNode = mapper.createObjectNode(); // 영상 객체 노드 생성
+                                // 영상 객체의 정보를 JSON 노드에 추가
+                                videoObjectNode.put("Date", videoData.get("Date").asText());
+                                videoObjectNode.put("URL", videoData.get("URL").asText());
+                                videoObjectNode.put("Title", videoData.get("Title").asText());
+                                videoObjectNode.put("Thumbnail", videoData.get("Thumbnail").asText());
+                                videoObjectNode.set("Tags", videoData.get("Tags")); // 태그 필드 추가
+                                videoObjectNode.set("ExtractedNouns", videoData.get("ExtractedNouns")); // 추출된 명사 필드 추가
+
+                                videoObjectsArrayNode.add(videoObjectNode); // 영상 객체를 하위 카테고리 배열에 추가
+                                break; // 현재 하위 카테고리에 속하는 영상을 찾았으므로 반복 종료
+                            }
+                        }
+                    }
+                }
+
+                subCategoryNode.set("videos", videoObjectsArrayNode); // 하위 카테고리 노드에 영상 객체 배열 추가
+                subCategoriesArrayNode.add(subCategoryNode); // 하위 카테고리 배열에 추가
+            }
+
+            mainCategoryNode.set("subCategories", subCategoriesArrayNode); // 상위 카테고리에 하위 카테고리 배열 추가
+            categoriesArrayNode.add(mainCategoryNode); // 카테고리 배열에 상위 카테고리 추가
+        }
+
+        // 최종 카테고리 구조를 콘솔에 출력
+        System.out.println("Generated Category Structure: " + categoriesArrayNode.toPrettyString());
+    }
+
 }

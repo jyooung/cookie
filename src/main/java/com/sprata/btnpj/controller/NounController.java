@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * NounController 클래스는 비디오 데이터와 상위 카테고리를 가져오는 RESTful API입니다.
+ * NounController 클래스는 비디오 데이터와 관련된 명사 및 카테고리를 처리하는 RESTful API입니다.
  */
 @RequestMapping("/api/cate") // 기본 API 경로 설정
 @RestController // 이 클래스가 REST 컨트롤러임을 나타냄
@@ -57,5 +57,13 @@ public class NounController {
     public List<String> getTopMainCategories() {
         // NounService의 getTopMainCategories 메소드를 호출하여 상위 카테고리를 반환
         return nounService.getTopMainCategories();
+    }
+
+    /**
+     * NounService의 generateCategoryStructure 메소드를 호출하여 카테고리 구조를 생성하는 메소드.
+     */
+    @GetMapping("/generate-category-structure") // 카테고리 구조 생성을 위한 엔드포인트
+    public void generateCategoryStructure() {
+        nounService.generateCategoryStructure(); // NounService의 메소드 호출
     }
 }
