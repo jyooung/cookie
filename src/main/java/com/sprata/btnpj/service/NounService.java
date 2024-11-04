@@ -3,7 +3,7 @@
 // 상위카테고리 리스트 생성하고 하위 카테고리 상위 10개 리스트 생성하기 완료
 // 바로 이전 커밋이 하위 카테고리 리스트 생성까지임
 // 이제 상위 카테고리와 하위 카테고리에 모두 적합한 영상 분류하면 끝
-
+// new !! 카테고리 분류할 구조체 생성 완료
 package com.sprata.btnpj.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
