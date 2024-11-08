@@ -1,0 +1,159 @@
+.wrap {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.logo{
+    color:rgba(0, 0, 0, 1);
+    position:absolute;
+    left:80px;
+    top:17px;
+    font-size:24px;
+    letter-spacing:0px;
+}
+
+.main_sign {
+    background-color:rgba(202.73082554340363, 223.0668631196022, 226.65561854839325, 1);
+    width:100%;
+    height:266px;
+    position:absolute;
+    left:0px;
+    top:61px;
+}
+
+.sign_img {
+    width:200px;
+    height:180px;
+    position:absolute;
+    margin: 30px 0 0 300px;
+    background-image:url(../js/img/laptop.png);
+    background-repeat:no-repeat;
+    background-size:cover;
+}
+
+.sign_text {
+    color:rgba(0, 0, 0, 1);
+    width:800px;
+    height:150px;
+    position:absolute;
+    left:530px;
+    top:130px;
+    font-family:Alata;
+    text-align:left;
+    font-size:35px;
+    letter-spacing:0;
+    line-height:5px;
+}
+.user_id {
+    font-weight: bold;
+}
+.search {
+    background-color: rgba(229.4889137148857, 229.4889137148857, 229.4889137148857, 0.7400000095367432);
+    width: 400px;
+    height: 42px;
+    position: absolute;
+    left: 550px;
+    top: 360px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center; /* 텍스트와 이미지를 수평 가운데 정렬 */
+    justify-content: center; /* 텍스트와 이미지가 중앙에 정렬되도록 설정 */
+}
+
+.search-text {
+    text-align: center;
+    margin: 0; /* margin-top을 없애고 수평 정렬만 유지 */
+}
+
+.search_logo {
+    width: 25px;
+    height: 25px;
+    background-image: url(../js/img/search.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin-left: 10px; /* 이미지와 텍스트 사이에 여백을 추가 */
+}
+/* 기존 CSS는 그대로 두고, 중앙 정렬을 위한 부분만 수정 */
+.cate_massage_container {
+    display: flex; /* Flexbox로 자식 요소들을 중앙 정렬 */
+    justify-content: center; /* 수평 중앙 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    height: 100vh; /* 부모의 높이를 모두 차지 */
+    margin-top: 15%;
+}
+
+/* 기존 텍스트 스타일 그대로 유지 */
+.cate_message {
+    font-size: 30px; /* 글씨 크기 조정 */
+    color: #333; /* 글씨 색상 */
+    text-align: center; /* 텍스트 가운데 정렬 */
+}
+/*카테고리 네비게이션*/
+/* 상위 카테고리 버튼 스타일링 (가로 네비게이션) */
+.category-navigation {
+    display: flex;
+    gap: 20px;  /* 버튼들 간의 간격 */
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.category-button {
+    cursor: pointer;
+    padding: 10px 20px;
+    background-color: #ccc;
+    border: 1px solid #999;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.category-button.selected-category {
+    background-color: #ff6347; /* 선택된 카테고리 색상 */
+    color: white;
+}
+
+/* 하위 카테고리 버튼 스타일링 */
+.sub-category-container {
+    display: none;  /* 기본적으로 숨김 */
+    margin-top: 10px;
+    background-color: #e8e8e8;
+    padding: 10px;
+    border-radius: 5px;
+    flex-wrap: wrap;
+}
+
+.sub-category-button {
+    cursor: pointer;
+    padding: 8px 16px;
+    margin: 5px;
+    background-color: #ddd;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+}
+
+.sub-category-button.selected-sub-category {
+    background-color: #ffa500;
+    color: white;
+}
+
+/* 이미지 컨테이너 스타일링 */
+.image-container {
+    display: none;
+    margin-top: 20px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.image-item {
+    margin: 10px 0;
+    padding: 5px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+}

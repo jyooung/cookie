@@ -1,0 +1,162 @@
+/* 기본 스타일 */
+body {
+  display: flex;
+  justify-content: center; /* 수평 중앙 정렬 */
+  align-items: center; /* 수직 중앙 정렬 */
+  height: 100vh; /* 화면 전체 높이 */
+  margin: 0; /* 기본 margin 제거 */
+  flex-direction: column; /* 요소를 세로 방향으로 배치 */
+}
+
+/* 로딩 컨테이너 */
+.loading-container {
+  overflow: hidden;
+  background-color: rgba(202, 223, 226, 1);
+  width: 3000px;
+  height: 2000px;
+  position: absolute;
+  top: 0; /* 상단 정렬 */
+  left: 0; /* 왼쪽 정렬 */
+}
+
+/* 로고 텍스트 */
+.top-logo {
+  color: rgb(16, 18, 17);
+  width: 214px;
+  height: 52px;
+  position: absolute;
+  left: 36px;
+  top: 27px;
+  font-family: Actor;
+  text-align: left;
+  font-size: 20px;
+  letter-spacing: 0px;
+}
+
+/* 로딩 텍스트 */
+.loading-text {
+  color: rgba(0, 0, 0, 1);
+  width: 700px;
+  height: 95px;
+  position: absolute;
+  left: 520px;
+  top: 600px;
+  font-family: ABeeZee;
+  text-align: left;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+
+/* 로딩 스피너 */
+.loading-spinner {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-top: 20px; /* 아래쪽 여백 추가 */
+}
+
+/* 로딩 스피너 div 스타일 */
+.loading-spinner div,
+.loading-spinner div:after {
+  box-sizing: border-box;
+}
+
+.loading-spinner,
+.loading-spinner div,
+.loading-spinner div:after {
+  box-sizing: border-box;
+}
+
+/* 로딩 스피너 애니메이션 */
+@keyframes lds-roller {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 각 div의 애니메이션 지연 설정 */
+.loading-spinner div {
+  animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  transform-origin: 40px 40px;
+}
+
+/* 각 div의 애니메이션 후속 스타일 설정 */
+.loading-spinner div:after {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 7.2px;
+  height: 7.2px;
+  border-radius: 50%;
+  background: currentColor;
+  margin: -3.6px 0 0 -3.6px;
+}
+
+/* 각 div에 대해 애니메이션 지연 시간 설정 */
+.loading-spinner div:nth-child(1) {
+  animation-delay: -0.036s;
+}
+.loading-spinner div:nth-child(1):after {
+  top: 62.62742px;
+  left: 62.62742px;
+}
+
+.loading-spinner div:nth-child(2) {
+  animation-delay: -0.072s;
+}
+.loading-spinner div:nth-child(2):after {
+  top: 67.71281px;
+  left: 56px;
+}
+
+.loading-spinner div:nth-child(3) {
+  animation-delay: -0.108s;
+}
+.loading-spinner div:nth-child(3):after {
+  top: 70.90963px;
+  left: 48.28221px;
+}
+
+.loading-spinner div:nth-child(4) {
+  animation-delay: -0.144s;
+}
+.loading-spinner div:nth-child(4):after {
+  top: 72px;
+  left: 40px;
+}
+
+.loading-spinner div:nth-child(5) {
+  animation-delay: -0.18s;
+}
+.loading-spinner div:nth-child(5):after {
+  top: 70.90963px;
+  left: 31.71779px;
+}
+
+.loading-spinner div:nth-child(6) {
+  animation-delay: -0.216s;
+}
+.loading-spinner div:nth-child(6):after {
+  top: 67.71281px;
+  left: 24px;
+}
+
+.loading-spinner div:nth-child(7) {
+  animation-delay: -0.252s;
+}
+.loading-spinner div:nth-child(7):after {
+  top: 62.62742px;
+  left: 17.37258px;
+}
+
+.loading-spinner div:nth-child(8) {
+  animation-delay: -0.288s;
+}
+.loading-spinner div:nth-child(8):after {
+  top: 56px;
+  left: 12.28719px;
+}
