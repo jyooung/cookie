@@ -65,7 +65,7 @@ public class NounController {
     }
 
     /**
-     * 비디오 데이터를 상위 및 하위 카테고리별로 그룹화하고 구조를 JSON 형식으로 출력하는 메소드.
+     * 비디오 데이터를 상위 및 하위 카테고리별로 그룹화하고 구조를 JSON 형식으로 출력하는 메서드.
      *
      * @return 카테고리 구조 생성 완료 메시지
      */
@@ -74,9 +74,11 @@ public class NounController {
         // 비디오 데이터 리스트를 가져옴
         List<JsonNode> videoDataList = nounService.getVideoDataWithExtractedNouns();
 
-        // NounService의 generateCategoryStructure 메소드에 비디오 데이터 전달
+        // NounService의 generateCategoryStructure 메서드에 비디오 데이터 전달
         nounService.generateCategoryStructure(videoDataList);
 
-        return new ResponseEntity<>("Category structure generated and printed successfully.", HttpStatus.OK); // 성공 메시지 반환
+        // 카테고리 구조 생성 및 출력 완료 메시지 반환
+        return new ResponseEntity<>("Category structure generated and printed successfully.", HttpStatus.OK);
     }
+
 }

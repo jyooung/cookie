@@ -1,159 +1,239 @@
-.wrap {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+/* 기본 스타일 유지 */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    font-size: 16px;
     box-sizing: border-box;
 }
 
-.logo{
-    color:rgba(0, 0, 0, 1);
-    position:absolute;
-    left:80px;
-    top:17px;
-    font-size:24px;
-    letter-spacing:0px;
+.wrap {
+    margin-top: 10vh; /* 로고 아래에 콘텐츠가 위치하도록 여백 추가 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+.logo {
+    color: rgba(0, 0, 0, 1);
+    position: fixed; /* 화면에 고정 */
+    top: 4vh; /* 상단 여백 */
+    left: 2vw; /* 왼쪽 여백 */
+    font-size: 1.5rem;
+    z-index: 10; /* 다른 요소들보다 위에 오도록 */
+}
+
+
+
 .main_sign {
-    background-color:rgba(202.73082554340363, 223.0668631196022, 226.65561854839325, 1);
-    width:100%;
-    height:266px;
-    position:absolute;
-    left:0px;
-    top:61px;
+    background-color: rgba(202, 223, 226, 1);
+    width: 100%;
+    height: 40vh;
+    position: relative;
+    margin-top: 5vh;
 }
 
 .sign_img {
-    width:200px;
-    height:180px;
-    position:absolute;
-    margin: 30px 0 0 300px;
-    background-image:url(../js/img/laptop.png);
-    background-repeat:no-repeat;
-    background-size:cover;
+    width: 32vw;
+    height: 25vh;
+    position: absolute;
+    top: 7vh;
+    left: 12vw;
+    background-image: url(../js/img/laptop.png);
+    background-repeat: no-repeat;
+    background-size: contain; /* 이미지 전체를 보이게 설정 */
+    background-position: center; /* 이미지가 가운데 정렬되도록 설정 */
 }
 
+
 .sign_text {
-    color:rgba(0, 0, 0, 1);
-    width:800px;
-    height:150px;
-    position:absolute;
-    left:530px;
-    top:130px;
-    font-family:Alata;
-    text-align:left;
-    font-size:35px;
-    letter-spacing:0;
-    line-height:5px;
-}
-.user_id {
-    font-weight: bold;
-}
-.search {
-    background-color: rgba(229.4889137148857, 229.4889137148857, 229.4889137148857, 0.7400000095367432);
-    width: 400px;
-    height: 42px;
+    color: rgba(0, 0, 0, 1);
+    max-width: 50vw;
     position: absolute;
-    left: 550px;
-    top: 360px;
+    top: 15vh;
+    left: 36vw;
+    font-family: Alata;
+    font-size: 2rem;
+    line-height: 1.5;
+}
+
+.search {
+    background-color: rgba(229, 229, 229, 0.74);
+    width: 30vw;
+    height: 5vh;
     border-radius: 10px;
     display: flex;
-    align-items: center; /* 텍스트와 이미지를 수평 가운데 정렬 */
-    justify-content: center; /* 텍스트와 이미지가 중앙에 정렬되도록 설정 */
+    align-items: center;
+    justify-content: center;
+    margin: 35px auto;
+    padding: 0.8vh;
 }
 
 .search-text {
     text-align: center;
-    margin: 0; /* margin-top을 없애고 수평 정렬만 유지 */
+    font-size: 1rem;
 }
 
 .search_logo {
-    width: 25px;
-    height: 25px;
+    width: 1.5rem;
+    height: 1.5rem;
     background-image: url(../js/img/search.png);
     background-repeat: no-repeat;
     background-size: cover;
-    margin-left: 10px; /* 이미지와 텍스트 사이에 여백을 추가 */
-}
-/* 기존 CSS는 그대로 두고, 중앙 정렬을 위한 부분만 수정 */
-.cate_massage_container {
-    display: flex; /* Flexbox로 자식 요소들을 중앙 정렬 */
-    justify-content: center; /* 수평 중앙 정렬 */
-    align-items: center; /* 수직 중앙 정렬 */
-    height: 100vh; /* 부모의 높이를 모두 차지 */
-    margin-top: 15%;
+    margin-left: 10px;
 }
 
-/* 기존 텍스트 스타일 그대로 유지 */
-.cate_message {
-    font-size: 30px; /* 글씨 크기 조정 */
-    color: #333; /* 글씨 색상 */
-    text-align: center; /* 텍스트 가운데 정렬 */
+.cate_massage_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2vh;
 }
-/*카테고리 네비게이션*/
-/* 상위 카테고리 버튼 스타일링 (가로 네비게이션) */
+
+.cate_message {
+    font-size: 2rem;
+    color: #333;
+    text-align: center;
+}
+
+/* 카테고리 네비게이션 */
 .category-navigation {
     display: flex;
-    gap: 20px;  /* 버튼들 간의 간격 */
-    background-color: #f0f0f0;
-    padding: 10px;
+    gap: 2vw;
+    padding: 1vh 0;
     border-radius: 5px;
+    overflow-x: auto;
+    margin: 2vh auto;
+    max-width: 80vw;
 }
 
 .category-button {
     cursor: pointer;
     padding: 10px 20px;
     background-color: #ccc;
-    border: 1px solid #999;
-    border-radius: 5px;
+    border-radius: 30px;
     text-align: center;
     font-weight: bold;
 }
 
 .category-button.selected-category {
-    background-color: #ff6347; /* 선택된 카테고리 색상 */
+    background-color: #b5d0d8;
     color: white;
 }
 
-/* 하위 카테고리 버튼 스타일링 */
+.category-button:hover {
+    background-color: #cadee2;  /* 마우스 오버 시 색상 변경 */
+    transform: translateY(-3px); /* 살짝 위로 떠오르는 효과 */
+}
+
+/* 하위 카테고리 스타일 유지 */
 .sub-category-container {
-    display: none;  /* 기본적으로 숨김 */
-    margin-top: 10px;
-    background-color: #e8e8e8;
-    padding: 10px;
-    border-radius: 5px;
-    flex-wrap: wrap;
+    display: flex;
+    gap: 1.5vw;
+    padding: 8px;
+    overflow-x: auto;
+
+    max-width: 80vw;
 }
 
 .sub-category-button {
     cursor: pointer;
-    padding: 8px 16px;
-    margin: 5px;
-    background-color: #ddd;
-    border: 1px solid #aaa;
-    border-radius: 5px;
+    padding: 8px 15px;
+    background-color: #ccc;
+    border-radius: 30px; /* 상위 카테고리와 동일한 둥근 모서리 */
+    text-align: center;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;  /* 부드러운 전환 효과 */
+    font-size: 0.9rem;
 }
 
 .sub-category-button.selected-sub-category {
-    background-color: #ffa500;
+    background-color: #fdaaaa; /* 선택된 하위 카테고리 색상 */
     color: white;
+
 }
 
-/* 이미지 컨테이너 스타일링 */
+.sub-category-button:hover {
+    background-color: rgb(253, 220, 192);  /* 마우스 오버 시 색상 변경 */
+    transform: translateY(-3px); /* 살짝 위로 떠오르는 효과 */
+}
+
+
+/* 콘텐츠 영역 */
+#content-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2vw;
+    margin: 3vh auto;
+    max-width: 90vw;
+    justify-content: space-between;
+}
+
+/* 콘텐츠 아이템 높이 통일 */
+.content-item {
+    flex: 1 1 calc(33.33% - 20px); /* 3개씩 나열되게, 간격 고려 */
+    max-width: calc(33.33% - 20px);
+    display: flex;
+    flex-direction: column; /* 이미지와 제목을 세로로 배치 */
+    align-items: center; /* 중앙 정렬 */
+    justify-content: flex-start; /* 상단 정렬 */
+    border-radius: 10px;
+    overflow: hidden; /* 이미지가 카드 밖으로 나가지 않게 */
+
+    background-color: white; /* 배경색 추가 */
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.content-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+
+/* 이미지 컨테이너 */
 .image-container {
-    display: none;
-    margin-top: 20px;
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 5px;
+    width: 303%; /* 카드 너비에 맞게 */
+    height: 170px;  /* 고정된 높이 */
+    overflow: hidden;
 }
 
-.image-item {
-    margin: 10px 0;
-    padding: 5px;
-    background-color: #e0e0e0;
-    border-radius: 3px;
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 이미지 크기 고정 */
+}
+
+/* 텍스트 줄 수 제한 */
+.title {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px;
+    color: #333;
+    width: 100%;
+    height: 48px; /* 고정 높이 */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 텍스트 줄 수 제한 */
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+}
+
+/* 반응형 처리 시 동일 크기 유지 */
+@media (max-width: 768px) {
+    .content-item {
+        flex: 1 1 calc(50% - 10px);
+        min-height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-item {
+        flex: 1 1 100%;
+        min-height: 180px;
+    }
 }

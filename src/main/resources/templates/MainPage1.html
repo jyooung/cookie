@@ -1,9 +1,10 @@
-<!--메인페이지 다시 만들었고 아래 네비게이션과 컨텐츠 나오는 부분 병합하는 중-->
+<!-- 데이터 전달만 완료 -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Personal follower</title>
+    <title>Personal Follower</title>
     <link rel="stylesheet" href="/css/MainPageCss.css">
     <link href="https://fonts.googleapis.com/css?family=Actor&display=swap" rel="stylesheet">
 </head>
@@ -11,106 +12,89 @@
 <div class="wrap">
     <span class="logo">personal follower</span>
     <div class="main_sign">
-        <!--컴퓨터 이미지-->
         <div class="sign_img"></div>
         <span class="sign_text"><span class="user_id">jyooung</span>님의 관심 카테고리를 보여드릴게요!</span>
     </div>
     <div class="search">
         <div class="search-text">카테고리 키워드를 검색해보세요</div>
-        <!--돋보기 이미지-->
         <div class="search_logo"></div>
     </div>
     <div class="cate_massage_container">
         <div class="cate_message">1개월 동안의 20개의 카테고리에 관심이 있으셨군요!</div>
     </div>
 
-    <!-- 상위 카테고리 버튼 (가로 네비게이션) -->
+    <!-- 상위 카테고리 네비게이션 -->
     <div class="category-navigation">
-        <div th:each="category, iterStat : ${categories}"
+        <div th:each="category : ${categoriesData}"
              class="category-button"
-             th:text="${category}"
-             th:data-category="${iterStat.index + 1}">
+             th:text="${category.categoryName}"
+             th:data-category="${category.categoryName}">
         </div>
     </div>
 
-    <!-- 하위 카테고리 및 해당 이미지 컨테이너 -->
-    <div th:each="category, iterStat : ${categories}">
-        <!-- 하위 카테고리 목록 -->
-        <div class="sub-category-container" th:id="'sub-category-container-' + ${iterStat.index + 1}" style="display:none;">
-            <div th:each="subCategory : ${subCategories[category]}"
-                 class="sub-category-button"
-                 th:text="${subCategory}"
-                 th:data-category="${category}"
-                 th:data-subcategory="${subCategory}">
-            </div>
-        </div>
-
-        <!-- 해당 하위 카테고리 이미지 컨테이너 (Initially hidden) -->
-        <div th:each="subCategory : ${subCategories[category]}"
-             th:id="'image-container-' + ${iterStat.index + 1} + '-' + ${subCategory}"
-             class="image-container"
-             style="display:none;">
-            <div th:each="image : ${subCategoryImages[subCategory]}"
-                 class="image-item">
-                <p th:text="${image}"></p>
-            </div>
-        </div>
+    <!-- 하위 카테고리 컨테이너 -->
+    <div id="sub-category-container" class="sub-category-container" style="display: flex;">
+        <!-- 하위 카테고리 버튼이 여기에 동적으로 추가됩니다 -->
     </div>
 
+    <!-- 콘텐츠 영역 -->
+    <div id="content-container" style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <!-- 하위 카테고리를 클릭했을 때 콘텐츠가 여기에 동적으로 추가됩니다 -->
+    </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const categoryButtons = document.querySelectorAll('.category-button');
-            const subCategoryButtons = document.querySelectorAll('.sub-category-button');
+</div>
 
-            // 상위 카테고리 클릭 시 하위 카테고리 표시
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // 기존 선택된 카테고리 클래스 제거
-                    categoryButtons.forEach(btn => btn.classList.remove('selected-category'));
+<!-- 자바스크립트 -->
+<!-- 자바스크립트 -->
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        const categoryButtons = document.querySelectorAll('.category-button');
+        const subCategoryContainer = document.getElementById("sub-category-container");
 
-                    // 클릭한 상위 카테고리 버튼에 'selected-category' 클래스 추가
-                    button.classList.add('selected-category');
+        // Thymeleaf를 통해 전달된 데이터 바인딩
+        const categoriesData = /*[[${categories}]]*/ [];
 
-                    // 해당 상위 카테고리의 하위 카테고리만 표시
-                    const categoryIndex = button.getAttribute('data-category');
-                    const subCategoryContainer = document.getElementById(`sub-category-container-${categoryIndex}`);
+        console.log(categoriesData);  // categoriesData를 콘솔에 출력하여 값 확인
 
-                    // 모든 하위 카테고리 숨기기
-                    document.querySelectorAll('.sub-category-container').forEach(sub => {
-                        sub.style.display = 'none';
-                    });
+        // 하위 카테고리를 업데이트하는 함수
+        function updateSubCategories(categoryName) {
+            subCategoryContainer.innerHTML = '';  // 기존 하위 카테고리 지우기
 
-                    // 선택된 하위 카테고리만 표시
-                    subCategoryContainer.style.display = 'block';
+            const selectedCategory = categoriesData.find(category => category.categoryName === categoryName);
+            const subCategories = selectedCategory ? selectedCategory.subCategories : [];
+
+            subCategories.forEach(subCategory => {
+                const subCategoryDiv = document.createElement("div");
+                subCategoryDiv.className = "sub-category-button";
+                subCategoryDiv.textContent = subCategory.subCategoryName;
+                subCategoryContainer.appendChild(subCategoryDiv);
+
+                // 하위 카테고리 버튼 클릭 이벤트 리스너 추가
+                subCategoryDiv.addEventListener("click", function() {
+                    document.querySelectorAll('.sub-category-button').forEach(btn => btn.classList.remove('selected-sub-category'));
+                    subCategoryDiv.classList.add('selected-sub-category');
+                    updateContent(subCategory.contents);
                 });
             });
+        }
 
-            // 하위 카테고리 클릭 시 해당 이미지 컨테이너 표시
-            subCategoryButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    // 기존 선택된 하위 카테고리 클래스 제거
-                    subCategoryButtons.forEach(btn => btn.classList.remove('selected-sub-category'));
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                categoryButtons.forEach(btn => btn.classList.remove('selected-category'));
+                button.classList.add('selected-category');
 
-                    // 클릭한 하위 카테고리 버튼에 'selected-sub-category' 클래스 추가
-                    button.classList.add('selected-sub-category');
-
-                    // 해당 하위 카테고리에 맞는 이미지 컨테이너 표시
-                    const subCategory = button.getAttribute('data-subcategory');
-                    const category = button.getAttribute('data-category');
-                    const imageContainer = document.getElementById(`image-container-${category.indexOf(category) + 1}-${subCategory}`);
-
-                    // 모든 이미지 컨테이너 숨기기
-                    document.querySelectorAll('.image-container').forEach(container => {
-                        container.style.display = 'none';
-                    });
-
-                    // 선택된 하위 카테고리에 맞는 이미지 컨테이너만 표시
-                    imageContainer.style.display = 'block';
-                });
+                const categoryName = button.getAttribute('data-category');
+                updateSubCategories(categoryName);
             });
         });
-    </script>
-</div>
+
+        if (categoryButtons.length > 0) {
+            categoryButtons[0].classList.add('selected-category');
+            const defaultCategory = categoryButtons[0].getAttribute('data-category');
+            updateSubCategories(defaultCategory);
+        }
+    });
+</script>
+
 </body>
 </html>

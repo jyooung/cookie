@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Category and Subcategory Buttons</title>
+  <style>
+    /* 간단한 스타일링 */
+    .category-button, .subcategory-button {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      background-color: #f1f1f1;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      display: block;  /* 서브카테고리 버튼은 블록 형식으로 표시 */
+    }
+    .subcategory-list {
+      display: none;  /* 서브카테고리 목록은 기본적으로 숨김 */
+      margin-left: 20px; /* 서브카테고리 들여쓰기 */
+    }
+    .active {
+      background-color: #ffffff;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 카테고리 버튼 영역 -->
+<div id="category-buttons">
+  <h2>Categories</h2>
+  <!-- 카테고리 버튼이 동적으로 삽입될 위치 -->
+</div>
+
+<script>
+  // JSON 데이터 (예시)
+  const data = [
+    {
+      "mainCategory": "Film & Animation",
+      "subCategories": [
+        {
+          "subCategory": "영화",
+          "videos": [
+            {
+              "Date": "2024-07-19 00:11:38",
+              "URL": "https://www.youtube.com/watch?v=_8CiLAInaKk",
+              "Title": "≪그것이 알고 싶다≫ 순간 최고 시청률 찍고 전 국민이 분노했던 역대급 살인 사건..",
+              "Thumbnail": "https://i.ytimg.com/vi/_8CiLAInaKk/sddefault.jpg"
+            },
+            {
+              "Date": "2024-07-25 11:34:58",
+              "URL": "https://www.youtube.com/watch?v=6D7wB3HQz2g",
+              "Title": "감히.. 이혼변호사계 마동석급 능력자 장나라의 남편이 바람을 피면 벌어지는 미치도록 통쾌한 드라마",
+              "Thumbnail": "https://i.ytimg.com/vi_webp/6D7wB3HQz2g/maxresdefault.webp"
+            }
+          ]
+        },
+        {
+          "subCategory": "드라마",
+          "videos": [
+            {
+              "Date": "2024-07-19 00:11:38",
+              "URL": "https://www.youtube.com/watch?v=_8CiLAInaKk",
+              "Title": "≪그것이 알고 싶다≫ 순간 최고 시청률 찍고 전 국민이 분노했던 역대급 살인 사건..",
+              "Thumbnail": "https://i.ytimg.com/vi/_8CiLAInaKk/sddefault.jpg"
+            }
+          ]
+        }
+      ]
+    }
+  ];
+
+  // 카테고리 및 서브카테고리 버튼 동적 생성 함수
+  function generateCategoryButtons() {
+    const categoryButtonsDiv = document.getElementById('category-buttons');
+
+    // 카테고리 버튼 생성
+    data.forEach(item => {
+      const categoryButton = document.createElement('button');
+      categoryButton.classList.add('category-button');
+      categoryButton.textContent = item.mainCategory;
+      categoryButton.addEventListener('click', () => {
+        toggleSubcategories(item, categoryButton);
+      });
+      categoryButtonsDiv.appendChild(categoryButton);
+
+      // 서브카테고리 목록을 위한 div 생성
+      const subcategoryListDiv = document.createElement('div');
+      subcategoryListDiv.classList.add('subcategory-list');
+      item.subCategories.forEach(subCategory => {
+        const subCategoryButton = document.createElement('button');
+        subCategoryButton.classList.add('subcategory-button');
+        subCategoryButton.textContent = subCategory.subCategory;
+        subCategoryButton.addEventListener('click', () => {
+          alert(`You clicked on ${subCategory.subCategory}`);
+        });
+        subcategoryListDiv.appendChild(subCategoryButton);
+      });
+
+      categoryButton.appendChild(subcategoryListDiv);  // 카테고리 버튼 하위에 서브카테고리 목록 추가
+    });
+  }
+
+  // 서브카테고리 목록 보이기/숨기기 토글 함수
+  function toggleSubcategories(categoryItem, categoryButton) {
+    const subcategoryList = categoryButton.querySelector('.subcategory-list');
+    // 서브카테고리 목록의 보이기/숨기기 처리
+    if (subcategoryList.style.display === '' || subcategoryList.style.display === 'none') {
+      subcategoryList.style.display = 'block';
+      categoryButton.classList.add('active');  // 활성화된 카테고리 버튼 스타일 변경
+    } else {
+      subcategoryList.style.display = 'none';
+      categoryButton.classList.remove('active');  // 비활성화된 카테고리 버튼 스타일 변경
+    }
+  }
+
+  // 초기화
+  generateCategoryButtons();
+</script>
+
+</body>
+</html>

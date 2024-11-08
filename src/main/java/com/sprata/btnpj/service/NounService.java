@@ -4,14 +4,18 @@
 // 바로 이전 커밋이 하위 카테고리 리스트 생성까지임
 // 이제 상위 카테고리와 하위 카테고리에 모두 적합한 영상 분류하면 끝
 // 카테고리 분류할 구조체 생성 완료
-// new !! 영상 카테고리로 분류했다. -> 한달치 정도 데이터만 실험중이다.
+//영상 카테고리로 분류했다. -> 한달치 정도 데이터만 실험중이다.
 // 파이썬 파일 자꾸 오류나서 파이썬 모듈로 뺐고 분류 후 categories.json파일에 저장하도록 했음
+// new !! 분류 기준 이상해서 코드 다시 짰음 @@@
 package com.sprata.btnpj.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -24,7 +28,7 @@ import java.util.Map;
 public class NounService {
 
     // YouTube 데이터가 저장된 파일 경로
-    private static final String DATA_FILE_PATH = "C:/SpringProject/personalCookie/btnPJ/ex2_details.txt";
+    private static final String DATA_FILE_PATH = "C:/SpringProject/personalCookie/btnPJ/ex1_details.txt";
 
     // Python 스크립트에서 입력 데이터로 사용할 JSON 파일 경로
     private static final String INPUT_JSON_PATH = "C:/SpringProject/personalCookie/btnPJ/input.json";
@@ -35,6 +39,8 @@ public class NounService {
     private final ObjectMapper mapper = new ObjectMapper();
 
     private static final String CATEGORY_OUTPUT_PATH = "C:/SpringProject/personalCookie/btnPJ/categories.json"; // 출력 파일 경로
+
+
     /**
      * ex1_details.txt 파일의 데이터를 JSON 형식으로 변환하여 input.json 파일로 저장하고
      * Python 스크립트를 실행하여 output.json에 저장된 결과를 읽어 반환
@@ -208,63 +214,20 @@ public class NounService {
                 .map(Map.Entry::getKey) // 상위 카테고리 이름만 가져오기
                 .toList(); // List<String>으로 변환하여 반환
     }
-    /**
-     * 영상 데이터를 상위 카테고리와 하위 카테고리별로 그룹화하여 Map 형태로 반환하는 메서드.
-     *
-     * @param videoDataList 영상 객체 리스트
-     * @return 상위 카테고리와 하위 카테고리로 그룹화된 영상 객체를 포함하는 Map
-     */
-    public Map<String, Map<String, List<JsonNode>>> categorizeVideosByMainAndSubCategory(List<JsonNode> videoDataList) {
-        // 결과를 저장할 Map 초기화
-        Map<String, Map<String, List<JsonNode>>> categorizedVideos = new HashMap<>();
-
-        // 상위 카테고리와 하위 카테고리 리스트 가져오기
-        List<String> topMainCategories = getTopMainCategories();
-        List<String> topSubCategories = getTopSubCategories();
-
-        // 각 영상 객체에 대해 반복
-        for (JsonNode videoData : videoDataList) {
-            // ExtractedNouns 필드에서 하위 카테고리 가져오기
-            JsonNode subCategoriesNode = videoData.get("ExtractedNouns");
-
-            // 하위 카테고리가 존재하고 배열 형태인지 확인
-            if (subCategoriesNode != null && subCategoriesNode.isArray()) {
-                // 각 상위 카테고리에 대해 반복
-                for (String mainCategory : topMainCategories) {
-                    // 상위 카테고리가 처음 등장할 경우 초기화
-                    categorizedVideos.putIfAbsent(mainCategory, new HashMap<>());
-                    Map<String, List<JsonNode>> subCategoryMap = categorizedVideos.get(mainCategory);
-
-                    // 각 하위 카테고리에 대해 반복
-                    for (JsonNode subCategoryNode : subCategoriesNode) {
-                        String subCategory = subCategoryNode.asText();
-
-                        // 하위 카테고리가 상위 카테고리 목록에 포함되어 있는지 확인
-                        if (topSubCategories.contains(subCategory)) {
-                            // 하위 카테고리가 처음 등장할 경우 초기화
-                            subCategoryMap.putIfAbsent(subCategory, new ArrayList<>());
-                            List<JsonNode> videosList = subCategoryMap.get(subCategory);
-                            // 영상 객체 추가
-                            videosList.add(videoData);
-                        }
-                    }
-                }
-            }
-        }
-        return categorizedVideos; // 그룹화된 영상 데이터 반환
-    }
 
     /**
      * 카테고리 구조를 JSON 형식으로 생성하고, 콘솔에 출력하는 메서드.
      *
      * @param videoDataList 영상 객체 리스트
+     * @return
      */
-    public void generateCategoryStructure(List<JsonNode> videoDataList) {
-        // 영상 데이터를 카테고리별로 그룹화
-        Map<String, Map<String, List<JsonNode>>> categorizedVideos = categorizeVideosByMainAndSubCategory(videoDataList);
+    public ArrayNode generateCategoryStructure(List<JsonNode> videoDataList) {
+        // 상위 카테고리별로 영상 객체 분류하는 맵 생성
+        Map<String, Map<String, List<JsonNode>>> categorizedVideos = categorizeVideosByMainCategoryAndSubCategory(videoDataList);
+
         ArrayNode categoriesArrayNode = mapper.createArrayNode(); // 최종 카테고리 배열 초기화
 
-        // 각 상위 카테고리에 대해 반복
+        // 각 상위 카테고리마다 하위 카테고리들을 순차적으로 처리
         for (Map.Entry<String, Map<String, List<JsonNode>>> mainCategoryEntry : categorizedVideos.entrySet()) {
             String mainCategory = mainCategoryEntry.getKey(); // 상위 카테고리 이름
             Map<String, List<JsonNode>> subCategoryMap = mainCategoryEntry.getValue(); // 하위 카테고리 맵
@@ -274,21 +237,21 @@ public class NounService {
             mainCategoryNode.put("mainCategory", mainCategory); // 상위 카테고리 설정
             ArrayNode subCategoriesArrayNode = mapper.createArrayNode(); // 하위 카테고리 배열 초기화
 
-            // 하위 카테고리를 getTopSubCategories()의 순서로 정렬
+            // 하위 카테고리 리스트를 getTopSubCategories() 메서드의 결과로 정렬하여 가져오기
             List<String> sortedSubCategories = getTopSubCategories();
 
-            // 정렬된 하위 카테고리에 대해 반복
+            // 정렬된 하위 카테고리 리스트를 바탕으로 하위 카테고리 배치
             for (String subCategory : sortedSubCategories) {
-                // 하위 카테고리가 존재하는지 확인
+                // 해당 하위 카테고리 목록이 존재하는지 확인
                 if (subCategoryMap.containsKey(subCategory)) {
-                    List<JsonNode> videosList = subCategoryMap.get(subCategory); // 해당 하위 카테고리에 대한 영상 목록
+                    List<JsonNode> videosList = subCategoryMap.get(subCategory); // 해당 하위 카테고리의 영상 목록
 
                     // 하위 카테고리 노드 생성
                     ObjectNode subCategoryNode = mapper.createObjectNode();
                     subCategoryNode.put("subCategory", subCategory); // 하위 카테고리 설정
                     ArrayNode videoObjectsArrayNode = mapper.createArrayNode(); // 영상 객체 배열 초기화
 
-                    // 각 영상 객체에 대해 반복
+                    // 해당 하위 카테고리 내의 각 영상 객체에 대해 반복
                     for (JsonNode videoData : videosList) {
                         // 영상 객체 노드 생성
                         ObjectNode videoObjectNode = mapper.createObjectNode();
@@ -319,8 +282,62 @@ public class NounService {
 
         // 카테고리 구조를 JSON 파일로 저장
         saveCategoryStructureToFile(categoriesArrayNode);
+        // 생성된 카테고리 구조 반환
+        return categoriesArrayNode;
 
     }
+
+
+
+
+
+    /**
+     * 영상 데이터를 상위 카테고리 및 하위 카테고리로 분류하는 메서드
+     *
+     * @param videoDataList 영상 객체 리스트
+     * @return 상위 카테고리 및 하위 카테고리별로 분류된 맵
+     */
+    private Map<String, Map<String, List<JsonNode>>> categorizeVideosByMainCategoryAndSubCategory(List<JsonNode> videoDataList) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("Categorizing videos by main and sub categories started...");
+
+        Map<String, Map<String, List<JsonNode>>> categorizedVideos = new HashMap<>();
+
+        // 영상 객체를 상위 카테고리별로 분류
+        for (JsonNode videoData : videoDataList) {
+            JsonNode categories = videoData.get("Categories"); // 각 영상의 상위 카테고리
+            JsonNode extractedNouns = videoData.get("ExtractedNouns"); // 추출된 명사
+
+            // 상위 카테고리 리스트가 있는지 확인
+            if (categories != null && categories.isArray() && extractedNouns != null && extractedNouns.isArray()) {
+                // 상위 카테고리 목록을 반복
+                for (JsonNode categoryNode : categories) {
+                    String mainCategory = categoryNode.asText();
+
+                    // 상위 카테고리가 아직 맵에 없다면 생성
+                    categorizedVideos.computeIfAbsent(mainCategory, k -> new HashMap<>());
+
+                    // 해당 상위 카테고리 아래 하위 카테고리 리스트를 준비
+                    Map<String, List<JsonNode>> subCategoryMap = categorizedVideos.get(mainCategory);
+
+                    // 하위 카테고리 리스트를 추출
+                    for (JsonNode extractedNoun : extractedNouns) {
+                        String noun = extractedNoun.asText();
+
+                        // 하위 카테고리 명사에 해당하는 카테고리 추가
+                        subCategoryMap.computeIfAbsent(noun, k -> new ArrayList<>());
+                        subCategoryMap.get(noun).add(videoData); // 영상 객체 추가
+                    }
+                }
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Categorizing videos completed in " + (endTime - startTime) + " ms");
+
+        return categorizedVideos;
+    }
+
     /**
      * 카테고리 구조를 JSON 파일로 저장하는 메서드.
      *
@@ -328,8 +345,9 @@ public class NounService {
      */
     private void saveCategoryStructureToFile(ArrayNode categoriesArrayNode) {
         try {
-            // File 객체 생성
-            File file = new File(CATEGORY_OUTPUT_PATH);
+            // "src/main/resources" 폴더에 저장하도록 경로 설정
+            String resourcePath = "src/main/resources/categories.json";
+            File file = new File(resourcePath);
 
             // 파일이 존재하지 않으면 새로 생성
             if (!file.exists()) {
@@ -341,11 +359,44 @@ public class NounService {
             FileWriter fileWriter = new FileWriter(file);
             mapper.writerWithDefaultPrettyPrinter().writeValue(fileWriter, categoriesArrayNode);
             fileWriter.close();
-            System.out.println("Category structure saved to " + CATEGORY_OUTPUT_PATH);
+            System.out.println("Category structure saved to " + resourcePath);
         } catch (IOException e) {
             e.printStackTrace(); // 예외 발생 시 스택 트레이스 출력
         }
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(NounService.class);
+    public List<JsonNode> getCategoriesList() throws IOException {
+        // categories.json 파일을 읽어서 리스트로 변환
+        File file = new File("categories.json");
+
+        // 파일이 존재하는지 확인
+        if (!file.exists()) {
+            logger.error("categories.json 파일이 존재하지 않습니다.");
+            return null;
+        }
+
+        // 파일 읽기 전에 로그 찍기
+        logger.info("categories.json 파일을 읽고 있습니다...");
+
+        // 리스트 변환
+        List<JsonNode> categoriesList = mapper.readValue(file, mapper.getTypeFactory().constructCollectionType(List.class, JsonNode.class));
+
+        // 파일 읽기 후 리스트 내용 확인 로그 찍기
+        if (categoriesList != null) {
+            logger.info("categories.json 파일에서 " + categoriesList.size() + "개의 카테고리를 읽었습니다.");
+        } else {
+            logger.error("categoriesList가 null입니다.");
+        }
+
+        // 반환하기 전에 리스트 내용 확인 (디버그용)
+        for (JsonNode category : categoriesList) {
+            logger.debug("카테고리: {}", category.toString());
+        }
+
+        return categoriesList;
+    }
+
 
 
 
