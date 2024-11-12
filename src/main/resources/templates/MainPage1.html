@@ -1,4 +1,4 @@
-<!-- 데이터 전달만 완료 -->
+<!-- 데이터 전달 후에 동적 네비게이션 생성 완료 -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,12 +25,13 @@
 
     <!-- 상위 카테고리 네비게이션 -->
     <div class="category-navigation">
-        <div th:each="category : ${categoriesData}"
+        <div th:each="category : ${categories}"
              class="category-button"
-             th:text="${category.categoryName}"
-             th:data-category="${category.categoryName}">
+             th:text="${category.get('mainCategory').asText()}"
+             th:data-category="${category.get('mainCategory').asText()}">
         </div>
     </div>
+
 
     <!-- 하위 카테고리 컨테이너 -->
     <div id="sub-category-container" class="sub-category-container" style="display: flex;">
@@ -45,39 +46,69 @@
 </div>
 
 <!-- 자바스크립트 -->
-<!-- 자바스크립트 -->
 <script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function() {
         const categoryButtons = document.querySelectorAll('.category-button');
         const subCategoryContainer = document.getElementById("sub-category-container");
+        const contentContainer = document.getElementById("content-container");
 
-        // Thymeleaf를 통해 전달된 데이터 바인딩
+        // Thymeleaf에서 전달된 데이터 바인딩
         const categoriesData = /*[[${categories}]]*/ [];
 
         console.log(categoriesData);  // categoriesData를 콘솔에 출력하여 값 확인
 
-        // 하위 카테고리를 업데이트하는 함수
+        // 하위 카테고리 업데이트 함수
         function updateSubCategories(categoryName) {
             subCategoryContainer.innerHTML = '';  // 기존 하위 카테고리 지우기
+            contentContainer.innerHTML = '';  // 기존 콘텐츠 지우기
 
-            const selectedCategory = categoriesData.find(category => category.categoryName === categoryName);
+            const selectedCategory = categoriesData.find(category => category.mainCategory === categoryName);
             const subCategories = selectedCategory ? selectedCategory.subCategories : [];
 
             subCategories.forEach(subCategory => {
                 const subCategoryDiv = document.createElement("div");
                 subCategoryDiv.className = "sub-category-button";
-                subCategoryDiv.textContent = subCategory.subCategoryName;
+                subCategoryDiv.textContent = subCategory.subCategory;
                 subCategoryContainer.appendChild(subCategoryDiv);
 
-                // 하위 카테고리 버튼 클릭 이벤트 리스너 추가
+                // 하위 카테고리 클릭 시 콘텐츠 업데이트
                 subCategoryDiv.addEventListener("click", function() {
                     document.querySelectorAll('.sub-category-button').forEach(btn => btn.classList.remove('selected-sub-category'));
                     subCategoryDiv.classList.add('selected-sub-category');
-                    updateContent(subCategory.contents);
+                    updateContent(subCategory.videos);
                 });
             });
         }
 
+        // 콘텐츠 업데이트 함수
+        function updateContent(videos) {
+            contentContainer.innerHTML = '';  // 기존 콘텐츠 지우기
+
+            videos.forEach(video => {
+                const videoDiv = document.createElement("div");
+                videoDiv.className = "content-item";
+
+                const videoTitle = document.createElement("h3");
+                videoTitle.textContent = video.Title;
+                videoDiv.className = "title";
+                videoDiv.appendChild(videoTitle);
+
+                const videoThumbnail = document.createElement("img");
+                videoThumbnail.src = video.Thumbnail;
+                videoDiv.className = "image-container";
+                videoDiv.appendChild(videoThumbnail);
+
+
+                const videoLink = document.createElement("a");
+                videoLink.href = video.URL;
+                videoLink.textContent = "Watch Video";
+                videoDiv.appendChild(videoLink);
+
+                contentContainer.appendChild(videoDiv);
+            });
+        }
+
+        // 상위 카테고리 클릭 이벤트 리스너
         categoryButtons.forEach(button => {
             button.addEventListener('click', function() {
                 categoryButtons.forEach(btn => btn.classList.remove('selected-category'));
@@ -88,6 +119,7 @@
             });
         });
 
+        // 초기 카테고리 선택 및 하위 카테고리 업데이트
         if (categoryButtons.length > 0) {
             categoryButtons[0].classList.add('selected-category');
             const defaultCategory = categoryButtons[0].getAttribute('data-category');
