@@ -20,7 +20,7 @@
         <div class="search_logo"></div>
     </div>
     <div class="cate_massage_container">
-        <div class="cate_message">1개월 동안의 20개의 카테고리에 관심이 있으셨군요!</div>
+        <div class="cate_message">1개월 동안의 10개의 카테고리에 관심이 있으셨군요!</div>
     </div>
 
     <!-- 상위 카테고리 네비게이션 -->
@@ -82,31 +82,46 @@
 
         // 콘텐츠 업데이트 함수
         function updateContent(videos) {
+            const contentContainer = document.getElementById("content-container");
             contentContainer.innerHTML = '';  // 기존 콘텐츠 지우기
 
             videos.forEach(video => {
+                // 콘텐츠를 감싸는 div 생성
                 const videoDiv = document.createElement("div");
-                videoDiv.className = "content-item";
+                videoDiv.className = "content-item";  // 기본 클래스 'content-item' 추가
 
-                const videoTitle = document.createElement("h3");
-                videoTitle.textContent = video.Title;
-                videoDiv.className = "title";
-                videoDiv.appendChild(videoTitle);
+                // 썸네일 이미지 부모 div 생성 (image-container 클래스를 추가)
+                const imageContainer = document.createElement("div");
+                imageContainer.className = "image-container";  // 썸네일에 스타일 클래스 'image-container' 추가
 
+                // 썸네일 이미지 추가 (imageContainer 안에 videoThumbnail 추가)
                 const videoThumbnail = document.createElement("img");
                 videoThumbnail.src = video.Thumbnail;
-                videoDiv.className = "image-container";
-                videoDiv.appendChild(videoThumbnail);
+                imageContainer.appendChild(videoThumbnail);  // imageContainer 안에 썸네일 추가
 
+                // videoDiv 안에 imageContainer 추가
+                videoDiv.appendChild(imageContainer);  // videoDiv 안에 imageContainer 추가
 
-                const videoLink = document.createElement("a");
-                videoLink.href = video.URL;
-                videoLink.textContent = "Watch Video";
-                videoDiv.appendChild(videoLink);
+                // 제목 추가 (videoDiv 안에 videoTitle 추가)
+                const videoTitle = document.createElement("h3");
+                videoTitle.textContent = video.Title;
+                videoTitle.className = "title";  // 제목에 스타일 클래스 'title' 추가
+                videoDiv.appendChild(videoTitle);  // videoDiv 안에 제목 추가
 
+                // 클릭 이벤트 추가 (videoDiv 자체에 클릭 이벤트 설정)
+                videoDiv.addEventListener("click", () => {
+                    window.location.href = video.URL;  // 해당 URL로 이동
+                });
+
+                // 링크를 콘텐츠 컨테이너에 추가
                 contentContainer.appendChild(videoDiv);
             });
         }
+
+
+
+
+
 
         // 상위 카테고리 클릭 이벤트 리스너
         categoryButtons.forEach(button => {

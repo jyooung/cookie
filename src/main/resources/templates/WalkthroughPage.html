@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/WalkthroughCss.css">
+  <script>
+    function goToSignUp() {
+      window.location.href = 'index1.html'; // 회원가입 페이지 URL
+    }
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="main-wrapper">
+
+  <!-- 왼쪽 텍스트와 버튼 컨테이너 -->
+  <div class="text-container">
+    <div class="logo-text">personal follower</div>
+    <span class="main-text">디지털 라이프가 궁금하다면 personal follower</span>
+    <span class="sub-text">카테고리로 시작하는<br>당신의 디지털 라이프</span>
+    <div class="divider-1"></div>
+    <div class="divider-2"></div>
+    <div class="button-container">
+      <div class="button-wrapper">
+        <button class="start-button" onclick="goToSignUp()">퍼스널쿠키 시작하기</button>
+        <span class="first-visit-text">처음 방문하셨다면</span>
+      </div>
+
+      <div class="button-wrapper">
+        <button class="login-button">로그인</button>
+        <span class="existing-member-text">기존회원</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="image-container">
+    <img src="/js/img/walkMain.gif" alt="Display GIF" class="display-image">
+  </div>
+
+</div>
+</body>
+</html>

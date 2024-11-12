@@ -6,6 +6,7 @@ html, body {
     overflow-y: auto;
     font-size: 16px;
     box-sizing: border-box;
+    color: rgba(14, 14, 14, 0.77);
 }
 
 .wrap {
@@ -58,6 +59,8 @@ html, body {
     font-family: Alata;
     font-size: 2rem;
     line-height: 1.5;
+    font-weight: bold;
+    color: rgba(14, 14, 14, 0.68);
 }
 
 .search {
@@ -107,8 +110,31 @@ html, body {
     border-radius: 5px;
     overflow-x: auto;
     margin: 2vh auto;
-    max-width: 80vw;
+    max-width: 60vw;
+    -webkit-overflow-scrolling: touch;  /* 터치스크린에서도 부드러운 스크롤 */
+    padding-bottom: 20px;  /* 스크롤바와 내용 사이의 여백 */
 }
+
+/* 스크롤바 스타일 */
+.category-navigation::-webkit-scrollbar {
+    height: 8px;  /* 스크롤바의 높이 */
+}
+
+.category-navigation::-webkit-scrollbar-thumb {
+    background-color: rgba(212, 212, 212, 0.92);  /* 스크롤바 색상 */
+    border-radius: 10px;  /* 둥글게 */
+    border: 2px solid #fff;  /* 테두리 */
+}
+
+.category-navigation::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(212, 248, 242, 0.38);  /* 마우스 오버 시 색상 변경 */
+}
+
+.category-navigation::-webkit-scrollbar-track {
+    background: #f1f1f1;  /* 스크롤바 트랙 배경 */
+    border-radius: 10px;  /* 트랙 둥글게 */
+}
+
 
 .category-button {
     cursor: pointer;
@@ -117,7 +143,9 @@ html, body {
     border-radius: 30px;
     text-align: center;
     font-weight: bold;
+    white-space: nowrap;  /* 텍스트가 줄넘김 없이 한 줄로 표시되도록 설정 */
 }
+
 
 .category-button.selected-category {
     background-color: #b5d0d8;
@@ -162,78 +190,90 @@ html, body {
 }
 
 
-/* 콘텐츠 영역 */
+/* 콘텐츠 컨테이너 (전체 영역) */
 #content-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2vw;
-    margin: 3vh auto;
-    max-width: 90vw;
-    justify-content: space-between;
+    flex-wrap: wrap;  /* 한 줄에 여러 개의 아이템을 보여줄 수 있도록 */
+    gap: 50px;  /* 아이템 간 간격 */
+    justify-content: center;  /* 콘텐츠를 중앙으로 배치되도록 */
+    margin: 0 auto;  /* 가운데 정렬 */
+    padding: 50px 250px;  /* 콘텐츠 컨테이너의 양쪽 여백 추가 */
+    box-sizing: border-box;  /* padding과 border가 크기에 포함되도록 */
 }
 
-/* 콘텐츠 아이템 높이 통일 */
+/* 각 비디오 아이템 */
 .content-item {
-    flex: 1 1 calc(33.33% - 20px); /* 3개씩 나열되게, 간격 고려 */
-    max-width: calc(33.33% - 20px);
-    display: flex;
-    flex-direction: column; /* 이미지와 제목을 세로로 배치 */
-    align-items: center; /* 중앙 정렬 */
-    justify-content: flex-start; /* 상단 정렬 */
-    border-radius: 10px;
-    overflow: hidden; /* 이미지가 카드 밖으로 나가지 않게 */
-
-    background-color: white; /* 배경색 추가 */
-    transition: transform 0.2s, box-shadow 0.2s;
+    width: 300px;  /* 고정된 너비 설정 (여기서 크기를 고정) */
+    background-color: #f8f8f8;  /* 배경색 */
+    border: 1px solid #ddd;  /* 경계선 */
+    border-radius: 8px;  /* 모서리 둥글게 */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);  /* 그림자 효과 */
+    overflow: hidden;  /* 넘치는 콘텐츠 숨기기 */
+    transition: transform 0.3s ease;  /* 마우스 오버 시 확대 효과 */
+    box-sizing: border-box;  /* padding과 border가 크기에 포함되도록 */
+    min-width: 300px;  /* 최소 크기 설정 */
+    max-width: 300px;  /* 최대 크기 설정 */
 }
 
+/* 마우스를 올렸을 때 아이템 확대 */
 .content-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
 }
 
-
-/* 이미지 컨테이너 */
-.image-container {
-    width: 303%; /* 카드 너비에 맞게 */
-    height: 170px;  /* 고정된 높이 */
-    overflow: hidden;
+/* 썸네일 이미지 부모 컨테이너 */
+.content-item .image-container {
+    position: relative;  /* 부모 컨테이너를 상대 위치로 설정 */
+    width: 100%;  /* 부모 컨테이너의 너비는 100% */
+    height: 0;
+    padding-top: 56.25%;  /* 16:9 비율에 맞추기 위해 패딩으로 비율 고정 */
+    overflow: hidden;  /* 넘치는 이미지 부분은 숨김 */
 }
 
-
-.image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* 이미지 크기 고정 */
+/* 썸네일 이미지 스타일 */
+.content-item img {
+    position: absolute;  /* 절대 위치로 설정하여 부모 컨테이너에 맞게 배치 */
+    top: 0;
+    left: 0;
+    width: 100%;  /* 부모 컨테이너에 맞게 가로 크기 100% */
+    height: 100%;  /* 부모 컨테이너에 맞게 세로 크기 100% */
+    object-fit: cover;  /* 이미지 비율을 유지하며 영역을 채움 */
+    border-bottom: 1px solid #ddd;  /* 이미지 아래 경계선 */
 }
 
-/* 텍스트 줄 수 제한 */
+/* 제목 스타일 */
 .title {
-    text-align: center;
-    font-size: 1rem;
-    font-weight: bold;
-    padding: 10px;
-    color: #333;
-    width: 100%;
-    height: 48px; /* 고정 높이 */
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* 텍스트 줄 수 제한 */
-    -webkit-box-orient: vertical;
-    text-overflow: ellipsis;
+    margin: 10px;  /* 제목 주변 여백 */
+    font-size: 16px;  /* 제목 크기 */
+    font-weight: bold;  /* 제목 두껍게 */
+    color: #333;  /* 제목 색상 */
+    text-align: center;  /* 제목 가운데 정렬 */
+    display: -webkit-box;  /* 텍스트를 여러 줄로 표시할 수 있게 설정 */
+    -webkit-line-clamp: 2;  /* 두 줄까지만 표시 */
+    -webkit-box-orient: vertical;  /* 세로로 텍스트 자르기 */
+    overflow: hidden;  /* 넘치는 텍스트 숨기기 */
+    text-overflow: ellipsis;  /* 넘치는 텍스트에 ... 추가 */
 }
 
-/* 반응형 처리 시 동일 크기 유지 */
+/* 링크 스타일 */
+.content-link {
+    display: block;  /* 링크 전체를 블록으로 설정 */
+    text-decoration: none;  /* 기본 링크 스타일 제거 */
+}
+
+/* 반응형 설정 (모바일) */
 @media (max-width: 768px) {
+    #content-container {
+        padding: 50px 20px;  /* 작은 화면에서는 여백을 줄임 */
+    }
+
     .content-item {
-        flex: 1 1 calc(50% - 10px);
-        min-height: 200px;
+        width: calc(50% - 25px);  /* 화면 크기에 맞게 두 개씩 배치 */
     }
 }
 
+/* 더 작은 화면에서 한 줄에 하나씩 배치 */
 @media (max-width: 480px) {
     .content-item {
-        flex: 1 1 100%;
-        min-height: 180px;
+        width: calc(100% - 20px);  /* 화면 크기에 맞게 하나씩 배치 */
     }
 }

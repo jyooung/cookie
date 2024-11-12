@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Controller
-public class MainPageController {
+public class PageController {
 
     @Autowired
     private NounService nounService;
@@ -30,5 +30,26 @@ public class MainPageController {
         }
 
         return "MainPage1"; // Thymeleaf 템플릿 이름
+    }
+
+    @GetMapping("/startPage")
+    public String WalkPage() {
+
+
+        return "WalkthroughPage.html";
+    }
+
+    @GetMapping("/BeforePage")
+    public String BeforePage() {
+
+
+        return "BeforeAnalysisPage.html";
+    }
+
+    @GetMapping("/LoadingPage")
+    public String LoadingPage() {
+
+
+        return "LoadingPage.html";
     }
 }
