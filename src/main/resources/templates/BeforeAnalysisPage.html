@@ -18,13 +18,15 @@
     <div class="cate_massage_container">
         <div class="cate_message">아직 분석한 카테고리가 없습니다</div>
     </div>
-    <div class="start-analysis-btn" onclick="goToNextPage()" style="cursor:pointer;">분석 시작하기</div>
-
+    <div class="start-analysis-btn" onclick="startAnalysis()" style="cursor:pointer;">분석 시작하기</div>
 </div>
 
 <!-- 자바스크립트 -->
-<script th:inline="javascript">
-
+<script>
+    function startAnalysis() {
+        // 로딩 페이지로만 이동하도록 수정
+        window.location.href = '/loadingPage';
+    }
 </script>
 
 </body>

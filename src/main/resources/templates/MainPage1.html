@@ -43,25 +43,38 @@
         <!-- 하위 카테고리를 클릭했을 때 콘텐츠가 여기에 동적으로 추가됩니다 -->
     </div>
 
+    <div class="cate_massage_container">
+        <div class="cate_message">jyooung님의 추천 카테고리를 살펴볼게요</div>
+    </div>
+
+    <div id="recommendation-section">
+        <div id="recommendation-category-container" class="recommendation-buttons">
+            <!-- 추천 시스템 카테고리 버튼 -->
+        </div>
+        <div id="recommendation-content-container"></div>
+    </div>
+
+
 </div>
 
-<!-- 자바스크립트 -->
 <script th:inline="javascript">
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
+        // ---------------------- 기존 네비게이션 ---------------------- //
         const categoryButtons = document.querySelectorAll('.category-button');
         const subCategoryContainer = document.getElementById("sub-category-container");
         const contentContainer = document.getElementById("content-container");
 
-        // Thymeleaf에서 전달된 데이터 바인딩
+        // Thymeleaf에서 전달된 데이터 바인딩 (상위 카테고리와 하위 카테고리 데이터)
         const categoriesData = /*[[${categories}]]*/ [];
 
-        console.log(categoriesData);  // categoriesData를 콘솔에 출력하여 값 확인
+        console.log('categoriesData:', categoriesData); // categoriesData 확인
 
         // 하위 카테고리 업데이트 함수
         function updateSubCategories(categoryName) {
-            subCategoryContainer.innerHTML = '';  // 기존 하위 카테고리 지우기
-            contentContainer.innerHTML = '';  // 기존 콘텐츠 지우기
+            subCategoryContainer.innerHTML = ''; // 기존 하위 카테고리 초기화
+            contentContainer.innerHTML = ''; // 기존 콘텐츠 초기화
 
+            // 선택된 상위 카테고리에 해당하는 하위 카테고리 가져오기
             const selectedCategory = categoriesData.find(category => category.mainCategory === categoryName);
             const subCategories = selectedCategory ? selectedCategory.subCategories : [];
 
@@ -72,7 +85,7 @@
                 subCategoryContainer.appendChild(subCategoryDiv);
 
                 // 하위 카테고리 클릭 시 콘텐츠 업데이트
-                subCategoryDiv.addEventListener("click", function() {
+                subCategoryDiv.addEventListener("click", function () {
                     document.querySelectorAll('.sub-category-button').forEach(btn => btn.classList.remove('selected-sub-category'));
                     subCategoryDiv.classList.add('selected-sub-category');
                     updateContent(subCategory.videos);
@@ -82,50 +95,40 @@
 
         // 콘텐츠 업데이트 함수
         function updateContent(videos) {
-            const contentContainer = document.getElementById("content-container");
-            contentContainer.innerHTML = '';  // 기존 콘텐츠 지우기
+            contentContainer.innerHTML = ''; // 기존 콘텐츠 초기화
 
             videos.forEach(video => {
                 // 콘텐츠를 감싸는 div 생성
                 const videoDiv = document.createElement("div");
-                videoDiv.className = "content-item";  // 기본 클래스 'content-item' 추가
+                videoDiv.className = "content-item"; // 콘텐츠 항목 클래스 추가
 
-                // 썸네일 이미지 부모 div 생성 (image-container 클래스를 추가)
+                // 썸네일 이미지 추가
                 const imageContainer = document.createElement("div");
-                imageContainer.className = "image-container";  // 썸네일에 스타일 클래스 'image-container' 추가
-
-                // 썸네일 이미지 추가 (imageContainer 안에 videoThumbnail 추가)
+                imageContainer.className = "image-container"; // 썸네일 이미지 스타일 클래스
                 const videoThumbnail = document.createElement("img");
                 videoThumbnail.src = video.Thumbnail;
-                imageContainer.appendChild(videoThumbnail);  // imageContainer 안에 썸네일 추가
+                imageContainer.appendChild(videoThumbnail);
 
-                // videoDiv 안에 imageContainer 추가
-                videoDiv.appendChild(imageContainer);  // videoDiv 안에 imageContainer 추가
-
-                // 제목 추가 (videoDiv 안에 videoTitle 추가)
+                // 제목 추가
                 const videoTitle = document.createElement("h3");
                 videoTitle.textContent = video.Title;
-                videoTitle.className = "title";  // 제목에 스타일 클래스 'title' 추가
-                videoDiv.appendChild(videoTitle);  // videoDiv 안에 제목 추가
+                videoTitle.className = "title";
 
-                // 클릭 이벤트 추가 (videoDiv 자체에 클릭 이벤트 설정)
+                // 클릭 이벤트 추가
                 videoDiv.addEventListener("click", () => {
-                    window.location.href = video.URL;  // 해당 URL로 이동
+                    window.location.href = video.URL; // 해당 URL로 이동
                 });
 
-                // 링크를 콘텐츠 컨테이너에 추가
+                // 콘텐츠 구성 요소 추가
+                videoDiv.appendChild(imageContainer);
+                videoDiv.appendChild(videoTitle);
                 contentContainer.appendChild(videoDiv);
             });
         }
 
-
-
-
-
-
         // 상위 카테고리 클릭 이벤트 리스너
         categoryButtons.forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 categoryButtons.forEach(btn => btn.classList.remove('selected-category'));
                 button.classList.add('selected-category');
 
@@ -140,7 +143,81 @@
             const defaultCategory = categoryButtons[0].getAttribute('data-category');
             updateSubCategories(defaultCategory);
         }
+
+        // ---------------------- 추천 네비게이션 ---------------------- //
+
+        // 추천 시스템용 데이터 (Thymeleaf에서 전달된 데이터)
+        const cateOutputData = /*[[${cateOutput}]]*/ {}; // 서버에서 전달된 데이터
+
+// 추천 카테고리 버튼 추가할 컨테이너
+        const recommendationCategoryContainer = document.getElementById("recommendation-category-container");
+        const recommendationContentContainer = document.getElementById("recommendation-content-container");
+
+// 추천 카테고리 버튼 생성
+        Object.keys(cateOutputData).forEach(category => {
+            const categoryButton = document.createElement("div");
+            categoryButton.className = "recommendation-category-button";
+            categoryButton.textContent = category;
+
+            // 클릭 이벤트 리스너
+            categoryButton.addEventListener("click", function () {
+                // 버튼 스타일 업데이트
+                document.querySelectorAll(".recommendation-category-button").forEach(btn => btn.classList.remove("selected-category"));
+                categoryButton.classList.add("selected-category");
+
+                // 콘텐츠 업데이트
+                updateRecommendationContent(category);
+            });
+
+            recommendationCategoryContainer.appendChild(categoryButton);
+        });
+
+// 추천 콘텐츠 업데이트 함수
+        function updateRecommendationContent(categoryName) {
+            recommendationContentContainer.innerHTML = ""; // 기존 추천 콘텐츠 초기화
+            const videos = cateOutputData[categoryName] || []; // 선택된 카테고리의 비디오 데이터
+
+            videos.forEach(video => {
+                // 콘텐츠 카드 생성
+                const videoDiv = document.createElement("div");
+                videoDiv.className = "content-item";
+
+                // 썸네일 이미지 추가
+                const imageContainer = document.createElement("div");
+                imageContainer.className = "image-container";
+                const thumbnail = document.createElement("img");
+                thumbnail.src = video.Thumbnail;
+                thumbnail.alt = video.title; // 접근성을 위한 alt 텍스트 추가
+                imageContainer.appendChild(thumbnail);
+
+                // 제목 추가
+                const title = document.createElement("h3");
+                title.textContent = video.title;
+                title.className = "title";
+
+                // 클릭 시 URL 이동
+                videoDiv.addEventListener("click", () => {
+                    window.location.href = video.url;
+                });
+
+                // 콘텐츠 구성 요소 추가
+                videoDiv.appendChild(imageContainer);
+                videoDiv.appendChild(title);
+                recommendationContentContainer.appendChild(videoDiv);
+            });
+        }
+
+// 추천 네비게이션 초기화 (첫 번째 카테고리 선택)
+        const initialCategory = Object.keys(cateOutputData)[0];
+        if (initialCategory) {
+            const firstButton = recommendationCategoryContainer.querySelector(".recommendation-category-button");
+            if (firstButton) firstButton.classList.add("selected-category");
+            updateRecommendationContent(initialCategory);
+        }
+
     });
+
+
 </script>
 
 </body>

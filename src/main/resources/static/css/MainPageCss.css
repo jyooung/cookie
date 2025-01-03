@@ -201,6 +201,17 @@ html, body {
     box-sizing: border-box;  /* padding과 border가 크기에 포함되도록 */
 }
 
+/* 콘텐츠 컨테이너 (전체 영역) */
+#content-container1 {
+    display: flex;
+    flex-wrap: wrap;  /* 한 줄에 여러 개의 아이템을 보여줄 수 있도록 */
+    gap: 50px;  /* 아이템 간 간격 */
+    justify-content: center;  /* 콘텐츠를 중앙으로 배치되도록 */
+    margin: 0 auto;  /* 가운데 정렬 */
+    padding: 50px 250px;  /* 콘텐츠 컨테이너의 양쪽 여백 추가 */
+    box-sizing: border-box;  /* padding과 border가 크기에 포함되도록 */
+}
+
 /* 각 비디오 아이템 */
 .content-item {
     width: 300px;  /* 고정된 너비 설정 (여기서 크기를 고정) */
@@ -260,6 +271,81 @@ html, body {
     text-decoration: none;  /* 기본 링크 스타일 제거 */
 }
 
+/* 추천 네비게이션 */
+/* 추천 섹션 전체 스타일 */
+#recommendation-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2vh; /* 카테고리와 콘텐츠 컨테이너 사이 간격 */
+    margin: 0 auto; /* 가운데 정렬 */
+    padding: 20px; /* 섹션 여백 */
+    max-width: 80vw; /* 최대 너비 설정 */
+    box-sizing: border-box; /* padding 포함 크기 */
+}
+
+/* 추천 카테고리 버튼 컨테이너 */
+#recommendation-category-container {
+    display: flex;
+    gap: 1.5vw; /* 버튼 간 간격 */
+    overflow-x: auto; /* 가로 스크롤 가능 */
+    padding: 10px 0; /* 위아래 여백 */
+    -webkit-overflow-scrolling: touch; /* 터치스크린에서도 부드러운 스크롤 */
+    border-bottom: 2px solid #e5e5e5; /* 하단 구분선 */
+}
+
+/* 스크롤바 스타일 */
+#recommendation-category-container::-webkit-scrollbar {
+    height: 8px; /* 스크롤바 높이 */
+}
+
+#recommendation-category-container::-webkit-scrollbar-thumb {
+    background-color: rgba(200, 200, 200, 0.8); /* 스크롤바 색상 */
+    border-radius: 10px; /* 둥근 스크롤바 */
+}
+
+#recommendation-category-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(150, 150, 150, 0.9); /* 호버 시 스크롤바 색상 */
+}
+
+#recommendation-category-container::-webkit-scrollbar-track {
+    background: #f5f5f5; /* 스크롤 트랙 배경색 */
+}
+
+/* 추천 카테고리 버튼 스타일 */
+.recommendation-buttons .recommendation-button {
+    cursor: pointer;
+    padding: 8px 16px;
+    background-color: #ccc; /* 기본 배경색 */
+    border-radius: 30px; /* 둥근 모서리 */
+    font-weight: bold; /* 굵은 텍스트 */
+    text-align: center;
+    white-space: nowrap; /* 텍스트 줄넘김 방지 */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* 부드러운 전환 효과 */
+}
+
+.recommendation-buttons .recommendation-button:hover {
+    background-color: #ddeeff; /* 마우스 오버 시 색상 */
+    transform: translateY(-3px); /* 살짝 위로 떠오르는 효과 */
+}
+
+.recommendation-buttons .recommendation-button.selected-recommendation {
+    background-color: #4caf50; /* 선택된 버튼 색상 */
+    color: white; /* 선택된 버튼 텍스트 색상 */
+}
+
+/* 추천 콘텐츠 컨테이너 */
+#recommendation-content-container {
+    display: flex;
+    flex-wrap: wrap; /* 한 줄에 여러 콘텐츠 */
+    gap: 2vw; /* 콘텐츠 간 간격 */
+    justify-content: center; /* 가운데 정렬 */
+    padding: 20px 0; /* 콘텐츠 여백 */
+    background-color: #f9f9f9; /* 콘텐츠 컨테이너 배경색 */
+    border-radius: 10px; /* 모서리 둥글게 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 가벼운 그림자 효과 */
+}
+
+
 /* 반응형 설정 (모바일) */
 @media (max-width: 768px) {
     #content-container {
@@ -277,3 +363,5 @@ html, body {
         width: calc(100% - 20px);  /* 화면 크기에 맞게 하나씩 배치 */
     }
 }
+
+

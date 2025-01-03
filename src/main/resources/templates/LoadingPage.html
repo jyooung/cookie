@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Loading Page</title>
   <link rel="stylesheet" href="/css/LoadingPage.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 </head>
 <body>
 <div class="loading-container">
@@ -17,5 +15,25 @@
   <div></div><div></div><div></div><div></div>
   <div></div><div></div><div></div><div></div>
 </div>
+
+<script>
+  // 데이터 준비 상태를 주기적으로 확인하는 함수
+  async function checkMainPageReady() {
+    try {
+      // startAnalysis로 요청을 보내고 페이지 준비 시 이동
+      const response = await fetch('/startAnalysis');
+
+      // 응답이 정상일 경우 MainPage로 리디렉션
+      if (response.ok) {
+        window.location.href = '/mainPage';
+      }
+    } catch (error) {
+      console.error('데이터 준비 상태 확인 중 오류:', error);
+    }
+  }
+
+  // 주기적으로 데이터 준비 상태를 확인
+  setInterval(checkMainPageReady, 1000); // 1초마다 확인
+</script>
 </body>
 </html>

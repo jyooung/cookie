@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class NounService {
@@ -40,7 +41,18 @@ public class NounService {
 
     private static final String CATEGORY_OUTPUT_PATH = "C:/SpringProject/personalCookie/btnPJ/categories.json"; // 출력 파일 경로
 
+    /*데이터 처리 로직 */
+    private boolean isReady = false;
 
+    public void processData() {
+        // 데이터 처리 로직
+        // 처리 후 isReady를 true로 설정
+        this.isReady = true;
+    }
+
+    public boolean isDataReady() {
+        return isReady;
+    }
     /**
      * ex1_details.txt 파일의 데이터를 JSON 형식으로 변환하여 input.json 파일로 저장하고
      * Python 스크립트를 실행하여 output.json에 저장된 결과를 읽어 반환
@@ -170,17 +182,38 @@ public class NounService {
             }
         }
 
-        // 해시맵의 내용을 출력 (디버깅 용도)
-        System.out.println("Category Frequency Map: " + categoryFrequencyMap);
-
         // 카테고리 빈도수를 기준으로 정렬하여 상위 10개 카테고리 추출
-        return categoryFrequencyMap.entrySet()
+        List<String> topCategories = categoryFrequencyMap.entrySet()
                 .stream()
                 .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())) // 빈도수 내림차순 정렬
                 .limit(10) // 상위 10개만 선택
                 .map(Map.Entry::getKey) // 카테고리 이름만 가져오기
-                .toList(); // List<String>으로 변환하여 반환
+                .collect(Collectors.toList()); // List<String>으로 변환하여 반환
+
+        // 상위 3개 카테고리를 subCate.txt 파일에 저장
+        saveTop3SubCategoriesToFile(topCategories);
+
+        return topCategories;
     }
+
+    // 상위 3개 카테고리를 subCate.txt 파일에 저장하는 메서드
+    private void saveTop3SubCategoriesToFile(List<String> topCategories) {
+        // 상위 3개 카테고리만 선택
+        List<String> top3Categories = topCategories.stream().limit(3).collect(Collectors.toList());
+
+        try (FileWriter writer = new FileWriter("subCate.txt")) {
+            // 상위 3개 카테고리를 파일에 한 줄씩 기록
+            for (String category : top3Categories) {
+                writer.write(category + System.lineSeparator());
+            }
+            System.out.println("상위 3개 카테고리가 subCate.txt 파일에 저장되었습니다.");
+        } catch (IOException e) {
+            System.err.println("파일 저장 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+
+
 
     /**
      * input.json의 각 데이터의 Categories 필드에서 상위 카테고리 리스트를 생성하고,

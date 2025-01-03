@@ -1,4 +1,10 @@
 /* Container */
+html, body {
+  height: 100%;   /* 페이지 전체 높이를 100%로 설정 */
+  margin: 0;      /* 기본 여백 제거 */
+  padding: 0;     /* 기본 패딩 제거 */
+  overflow-y: auto;
+}
 .container {
   overflow: hidden;
   background-color: rgba(255, 255, 255, 1);
@@ -40,17 +46,17 @@
   left: 550px;
   top: 230px;
   font-family: Actor;
-  text-align: left;
+  text-align: center;
   font-size: 40px;
   letter-spacing: 0px;
 }
 
 /* Icon Section */
 .icon-section {
-  width: 180px;
-  height: 180px;
+  width: 200px;
+  height: 200px;
   position: absolute;
-  left: 170px;
+  left: 260px;
   top: 193px;
   background-image: url(../js/img/search_property.png);
   background-repeat: no-repeat;
@@ -66,7 +72,7 @@
   left: 600px;
   top: 495px;
   font-family: Actor;
-  text-align: left;
+  text-align: center;
   font-size: 40px;
   letter-spacing: 0px;
 }
@@ -77,7 +83,7 @@
   width: 283px;
   height: 60px;
   position: absolute;
-  left: 750px;
+  left: 800px;
   top: 589px;
   border-radius: 10px;
 }
@@ -91,7 +97,7 @@
   left: 820px;
   top: 604px;
   font-family: Actor;
-  text-align: left;
+  text-align: center;
   font-size: 24px;
   letter-spacing: 0px;
 }
