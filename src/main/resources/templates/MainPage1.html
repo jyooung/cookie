@@ -43,8 +43,8 @@
         <!-- 하위 카테고리를 클릭했을 때 콘텐츠가 여기에 동적으로 추가됩니다 -->
     </div>
 
-    <div class="cate_massage_container">
-        <div class="cate_message">jyooung님의 추천 카테고리를 살펴볼게요</div>
+    <div class="recommendation-massage-container">
+        <div class="recommendation-message">jyooung님의 추천 카테고리를 살펴볼게요</div>
     </div>
 
     <div id="recommendation-section">
@@ -59,94 +59,114 @@
 
 <script th:inline="javascript">
     document.addEventListener("DOMContentLoaded", function () {
-        // ---------------------- 기존 네비게이션 ---------------------- //
-        const categoryButtons = document.querySelectorAll('.category-button');
-        const subCategoryContainer = document.getElementById("sub-category-container");
-        const contentContainer = document.getElementById("content-container");
+        // ---------------------- DOM 요소 선택 ---------------------- //
+        const categoryButtons = document.querySelectorAll('.category-button'); // 상위 카테고리 버튼 목록
+        const subCategoryContainer = document.getElementById("sub-category-container"); // 하위 카테고리를 표시하는 컨테이너
+        const contentContainer = document.getElementById("content-container"); // 콘텐츠를 표시하는 컨테이너
 
-        // Thymeleaf에서 전달된 데이터 바인딩 (상위 카테고리와 하위 카테고리 데이터)
-        const categoriesData = /*[[${categories}]]*/ [];
+        // Thymeleaf에서 서버 데이터를 바인딩하여 전달받는 카테고리 데이터 (예: JSON 형식)
+        const categoriesData = /*[[${categories}]]*/ []; // 실제 데이터는 서버에서 Thymeleaf를 통해 제공됨
 
-        console.log('categoriesData:', categoriesData); // categoriesData 확인
+        console.log('categoriesData:', categoriesData); // 카테고리 데이터 확인 (디버깅용)
 
-        // 하위 카테고리 업데이트 함수
+        /**
+         * 하위 카테고리 및 콘텐츠를 업데이트하는 함수
+         * @param {string} categoryName - 선택된 상위 카테고리 이름
+         */
         function updateSubCategories(categoryName) {
             subCategoryContainer.innerHTML = ''; // 기존 하위 카테고리 초기화
             contentContainer.innerHTML = ''; // 기존 콘텐츠 초기화
 
-            // 선택된 상위 카테고리에 해당하는 하위 카테고리 가져오기
+            // 선택된 상위 카테고리에 해당하는 데이터 검색
             const selectedCategory = categoriesData.find(category => category.mainCategory === categoryName);
-            const subCategories = selectedCategory ? selectedCategory.subCategories : [];
+            const subCategories = selectedCategory ? selectedCategory.subCategories : []; // 하위 카테고리 목록 추출
 
-            subCategories.forEach(subCategory => {
-                const subCategoryDiv = document.createElement("div");
-                subCategoryDiv.className = "sub-category-button";
-                subCategoryDiv.textContent = subCategory.subCategory;
-                subCategoryContainer.appendChild(subCategoryDiv);
+            if (subCategories.length > 0) {
+                subCategories.forEach((subCategory, index) => {
+                    // 하위 카테고리 버튼 생성
+                    const subCategoryDiv = document.createElement("div");
+                    subCategoryDiv.className = "sub-category-button"; // 하위 카테고리 버튼 스타일
+                    subCategoryDiv.textContent = subCategory.subCategory; // 버튼 텍스트 설정
+                    subCategoryContainer.appendChild(subCategoryDiv); // 컨테이너에 추가
 
-                // 하위 카테고리 클릭 시 콘텐츠 업데이트
-                subCategoryDiv.addEventListener("click", function () {
-                    document.querySelectorAll('.sub-category-button').forEach(btn => btn.classList.remove('selected-sub-category'));
-                    subCategoryDiv.classList.add('selected-sub-category');
-                    updateContent(subCategory.videos);
+                    // 클릭 이벤트 추가: 하위 카테고리를 선택했을 때 콘텐츠 업데이트
+                    subCategoryDiv.addEventListener("click", function () {
+                        // 기존에 선택된 하위 카테고리 스타일 초기화
+                        document.querySelectorAll('.sub-category-button').forEach(btn => btn.classList.remove('selected-sub-category'));
+                        // 현재 클릭된 하위 카테고리에 선택 스타일 추가
+                        subCategoryDiv.classList.add('selected-sub-category');
+                        // 선택된 하위 카테고리의 동영상 데이터로 콘텐츠 업데이트
+                        updateContent(subCategory.videos);
+                    });
+
+                    // 첫 번째 하위 카테고리를 기본값으로 설정
+                    if (index === 0) {
+                        subCategoryDiv.classList.add('selected-sub-category'); // 첫 번째 하위 카테고리에 선택 스타일 추가
+                        updateContent(subCategory.videos); // 첫 번째 하위 카테고리의 콘텐츠 표시
+                    }
                 });
-            });
+            }
         }
 
-        // 콘텐츠 업데이트 함수
+        /**
+         * 콘텐츠를 업데이트하는 함수
+         * @param {Array} videos - 하위 카테고리에 포함된 동영상 데이터 배열
+         */
         function updateContent(videos) {
             contentContainer.innerHTML = ''; // 기존 콘텐츠 초기화
 
             videos.forEach(video => {
-                // 콘텐츠를 감싸는 div 생성
+                // 콘텐츠 항목을 감싸는 div 생성
                 const videoDiv = document.createElement("div");
-                videoDiv.className = "content-item"; // 콘텐츠 항목 클래스 추가
+                videoDiv.className = "content-item"; // 콘텐츠 항목 스타일 클래스 추가
 
-                // 썸네일 이미지 추가
+                // 썸네일 이미지를 감싸는 div 생성
                 const imageContainer = document.createElement("div");
-                imageContainer.className = "image-container"; // 썸네일 이미지 스타일 클래스
-                const videoThumbnail = document.createElement("img");
-                videoThumbnail.src = video.Thumbnail;
-                imageContainer.appendChild(videoThumbnail);
+                imageContainer.className = "image-container"; // 썸네일 이미지 스타일 클래스 추가
+                const videoThumbnail = document.createElement("img"); // 썸네일 이미지 태그 생성
+                videoThumbnail.src = video.Thumbnail; // 썸네일 이미지 URL 설정
+                imageContainer.appendChild(videoThumbnail); // 이미지 컨테이너에 추가
 
-                // 제목 추가
+                // 제목 텍스트 추가
                 const videoTitle = document.createElement("h3");
-                videoTitle.textContent = video.Title;
-                videoTitle.className = "title";
+                videoTitle.textContent = video.Title; // 제목 텍스트 설정
+                videoTitle.className = "title"; // 제목 스타일 클래스 추가
 
-                // 클릭 이벤트 추가
+                // 클릭 이벤트 추가: 동영상 제목 클릭 시 해당 URL로 이동
                 videoDiv.addEventListener("click", () => {
-                    window.location.href = video.URL; // 해당 URL로 이동
+                    window.location.href = video.URL; // 동영상 URL로 페이지 이동
                 });
 
-                // 콘텐츠 구성 요소 추가
-                videoDiv.appendChild(imageContainer);
-                videoDiv.appendChild(videoTitle);
-                contentContainer.appendChild(videoDiv);
+                // 콘텐츠 항목 구성 요소 추가
+                videoDiv.appendChild(imageContainer); // 이미지 컨테이너 추가
+                videoDiv.appendChild(videoTitle); // 제목 추가
+                contentContainer.appendChild(videoDiv); // 전체 콘텐츠 컨테이너에 추가
             });
         }
 
-        // 상위 카테고리 클릭 이벤트 리스너
+        /**
+         * 상위 카테고리 클릭 이벤트 처리
+         */
         categoryButtons.forEach(button => {
             button.addEventListener('click', function () {
+                // 기존에 선택된 상위 카테고리 스타일 초기화
                 categoryButtons.forEach(btn => btn.classList.remove('selected-category'));
+                // 현재 클릭된 상위 카테고리에 선택 스타일 추가
                 button.classList.add('selected-category');
 
-                const categoryName = button.getAttribute('data-category');
-                updateSubCategories(categoryName);
+                const categoryName = button.getAttribute('data-category'); // 클릭된 상위 카테고리의 이름 가져오기
+                updateSubCategories(categoryName); // 하위 카테고리 및 콘텐츠 업데이트
             });
         });
 
-        // 초기 카테고리 선택 및 하위 카테고리 업데이트
+        // 페이지 로드 시 초기화: 첫 번째 상위 카테고리와 하위 카테고리 기본값 설정
         if (categoryButtons.length > 0) {
-            categoryButtons[0].classList.add('selected-category');
-            const defaultCategory = categoryButtons[0].getAttribute('data-category');
-            updateSubCategories(defaultCategory);
+            categoryButtons[0].classList.add('selected-category'); // 첫 번째 상위 카테고리 선택
+            const defaultCategory = categoryButtons[0].getAttribute('data-category'); // 첫 번째 카테고리 이름 가져오기
+            updateSubCategories(defaultCategory); // 첫 번째 상위 카테고리에 대한 하위 카테고리 및 콘텐츠 초기화
         }
 
-
-
-        // ---------------------- 추천 네비게이션 ---------------------- //
+    // ---------------------- 추천 네비게이션 ---------------------- //
 
         // 추천 시스템용 데이터 (Thymeleaf에서 전달된 데이터)
         const cateOutputData = /*[[${cateOutput}]]*/ {}; // 서버에서 전달된 데이터
