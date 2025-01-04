@@ -1,4 +1,6 @@
+/*css 최근으로 통일하여 수정하였음 메인사인 크키 변경*/
 /* 기본 스타일 유지 */
+
 html, body {
     height: 100%;
     margin: 0;
@@ -22,31 +24,33 @@ html, body {
     color: rgba(0, 0, 0, 1);
     position: fixed; /* 화면에 고정 */
     top: 4vh; /* 상단 여백 */
-    left: 2vw; /* 왼쪽 여백 */
+    left: 20vw; /* 왼쪽 여백 */
     font-size: 1.5rem;
     z-index: 10; /* 다른 요소들보다 위에 오도록 */
 }
 
 
 
+
 .main_sign {
     background-color: rgba(202, 223, 226, 1);
-    width: 100%;
-    height: 40vh;
+    width: 60%;
+    height: 30vh;
     position: relative;
     margin-top: 5vh;
+    border-radius: 15px;
 }
 
 .sign_img {
-    width: 32vw;
-    height: 25vh;
+    width: 25vw;
+    height: 18vh;
     position: absolute;
-    top: 7vh;
-    left: 12vw;
-    background-image: url(../js/img/search_property.png);
+    top: 6vh;
+    left: 6vw;
+    background-image: url(../js/img/laptop.png);
     background-repeat: no-repeat;
     background-size: contain; /* 이미지 전체를 보이게 설정 */
-    background-position: center; /* 이미지가 가운데 정렬되도록 설정 */
+    /*background-position: center; !* 이미지가 가운데 정렬되도록 설정 *!*/
 }
 
 
@@ -54,14 +58,16 @@ html, body {
     color: rgba(0, 0, 0, 1);
     max-width: 50vw;
     position: absolute;
-    top: 15vh;
-    left: 36vw;
+    top: 12vh;
+    left: 16vw;
     font-family: Alata;
-    font-size: 2rem;
+    font-size: 1.8vw;
     line-height: 1.5;
     font-weight: bold;
     color: rgba(14, 14, 14, 0.68);
 }
+
+
 
 .search {
     background-color: rgba(229, 229, 229, 0.74);
